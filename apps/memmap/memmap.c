@@ -19,6 +19,21 @@
 #define MAP_W (MAP_COLS * SCALE)
 #define MAP_H (MAP_ROWS * SCALE)
 
+static char *mem_algo_name(int algo_id)
+{
+	switch (algo_id) {
+		case 1:
+			return "FIRST_FIT";
+		case 2:
+			return "NEXT_FIT";
+		case 3:
+			return "BEST_FIT";
+		case 4:
+			return "WORST_FIT";
+	}
+	return "LEGACY";
+}
+
 static void draw_map(char *winbuf, unsigned char *state)
 {
 	int i, x0, y0, x, y, col;
@@ -46,6 +61,7 @@ int _main(void)
 	int free_bytes;
 	int free_pages;
 	int alloc_pages;
+	int algo_id;
 	unsigned int start_page;
 	unsigned int end_page;
 	char s[64];
@@ -71,6 +87,9 @@ int _main(void)
 	api_putstrwin(win, 560, 130, 0, strlen(s), s);
 	sprintf(s, "total: 128MB");
 	api_putstrwin(win, 560, 146, 0, strlen(s), s);
+	algo_id = api_getmemalgo();
+	sprintf(s, "algo : %s", mem_algo_name(algo_id));
+	api_putstrwin(win, 560, 210, 0, strlen(s), s);
 	api_putstrwin(win, 560, 226, 0, 22, "press key to close(1s)");
 
 	timer = api_alloctimer();
