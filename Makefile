@@ -116,8 +116,6 @@ run : Helo_OS.img
 	$(COPY) Helo_OS.img .\z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ./z_tools/qemu
 
-run_full : full run
-
 clean :
 	-$(MAKE) -C ./apps/2dball src_only
 	-$(MAKE) -C ./apps/about src_only
@@ -142,3 +140,5 @@ clean :
 	-$(MAKE) -C ./apps/stdlib src_only
 	-$(MAKE) -C ./kernel src_only
 	-$(DEL) Helo_OS.img
+
+run_full : clean full run
