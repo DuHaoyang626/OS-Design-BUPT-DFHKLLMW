@@ -66,6 +66,7 @@ int api_fopenEx(char *fname, int mode);
 void api_fcloseEx(int fhandle);
 int api_fwrite(char *buf, int maxsize, int fhandle);
 void api_sysinfo(struct SYSINFO *sysinfo);
+int api_getmemalgo(void);
 int api_getmemmap(struct MEMMAP_ENTRY *entries, int max_entries, int *free_bytes);
 
 // cpuid

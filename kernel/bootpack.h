@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // HELO OS BY:STON 2020
 // COPYRIGHT (C) 2019-2020 STON
-// ºÎÀÖÔ´ÂëÆìÏÂ
+// ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 // STON/PENGZZEKAI/HELO
 // 
 // =================================
@@ -80,7 +80,7 @@ void init_mouse_cursor8(char *mouse, char bc);
 void init_mouse_pen_cursor8(char *mouse, char bc);
 void putblock8_8(char *vram, int vxsize, int pxsize,
 int pysize, int px0, int py0, char *buf, int bxsize);
-int read_picture(int *fat, char *vram, int x, int y); /* ÕâÀï£¡ */
+int read_picture(int *fat, char *vram, int x, int y); /* ï¿½ï¿½ï¿½ï£¡ */
 #define COL8_000000 	0
 #define COL8_FF0000 	1
 #define COL8_00FF00 	2
@@ -169,6 +169,11 @@ int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 /* memory.c */
 #define MEMMAN_FREES		4090
 #define MEMMAN_ADDR			0x003c0000
+#define MEM_ALLOC_ALGO_LEGACY	0
+#define MEM_ALLOC_ALGO_FIRST_FIT	1
+#define MEM_ALLOC_ALGO_NEXT_FIT	2
+#define MEM_ALLOC_ALGO_BEST_FIT	3
+#define MEM_ALLOC_ALGO_WORST_FIT	4
 struct FREEINFO {
 	unsigned int addr, size;
 };
@@ -183,6 +188,8 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size);
 int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size);
 unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
 int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
+int memman_get_algo_id(void);
+char *memman_get_algo_name(void);
 
 /* sheet.c */
 #define MAX_SHEETS		256

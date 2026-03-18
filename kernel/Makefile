@@ -1,5 +1,5 @@
 #######################
-# HELO OS MakefileÎÄ¼þ
+# HELO OS Makefileï¿½Ä¼ï¿½
 # B Y : S T O N
 #######################
 
@@ -13,7 +13,27 @@ INCPATH  = ../z_tools/HeloInclude/
 
 MAKE     = $(TOOLPATH)make.exe -r
 NASK     = $(TOOLPATH)nask.exe
-CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet
+MEM_ALLOC_ALGO ?= LEGACY
+
+ifeq ($(MEM_ALLOC_ALGO),FIRST_FIT)
+ALLOC_DEF = -DMEM_ALLOC_ALGO=1
+else
+	ifeq ($(MEM_ALLOC_ALGO),NEXT_FIT)
+	ALLOC_DEF = -DMEM_ALLOC_ALGO=2
+	else
+		ifeq ($(MEM_ALLOC_ALGO),BEST_FIT)
+		ALLOC_DEF = -DMEM_ALLOC_ALGO=3
+		else
+			ifeq ($(MEM_ALLOC_ALGO),WORST_FIT)
+			ALLOC_DEF = -DMEM_ALLOC_ALGO=4
+			else
+			ALLOC_DEF = -DMEM_ALLOC_ALGO=0
+			endif
+		endif
+	endif
+endif
+
+CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet $(ALLOC_DEF)
 GAS2NASK = $(TOOLPATH)gas2nask.exe -a
 OBJ2BIM  = $(TOOLPATH)obj2bim.exe
 MAKEFONT = $(TOOLPATH)makefont.exe

@@ -11,6 +11,10 @@ EDIMG    = $(TOOLPATH)edimg.exe
 COPY     = copy
 DEL      = del
 
+# Memory allocator strategy passed to kernel build.
+# Options: LEGACY, FIRST_FIT, NEXT_FIT, BEST_FIT, WORST_FIT
+MEM_ALLOC_ALGO ?= LEGACY
+
 APP_DIRS = 2dball about calc counter cpuid csvv cvtg date gview hview invader mtorz music note pc tview type video
 APP_HELS = \
 	apps/2dball/2dball.hel \
@@ -63,7 +67,7 @@ apps : libs
 	$(MAKE) -C ./apps/video
 
 kernel :
-	$(MAKE) -C ./kernel
+	$(MAKE) -C ./kernel MEM_ALLOC_ALGO=$(MEM_ALLOC_ALGO)
 
 image : Helo_OS.img
 
