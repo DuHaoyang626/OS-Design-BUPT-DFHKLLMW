@@ -14,6 +14,11 @@
 #define RTC_YEAR			0x09
 #define RTC_CENTURY			0x32
 
+struct MEMMAP_ENTRY {
+	unsigned int addr;
+	unsigned int size;
+};
+
 //cmd
 void api_putchar(int c); //输出一个字符
 void api_putstr0(char *s); //命令行输出
@@ -62,6 +67,7 @@ void api_fcloseEx(int fhandle);
 int api_fwrite(char *buf, int maxsize, int fhandle);
 void api_sysinfo(struct SYSINFO *sysinfo);
 int api_getmemalgo(void);
+int api_getmemmap(struct MEMMAP_ENTRY *entries, int max_entries, int *free_bytes);
 
 // cpuid
 void asm_cpuid(int id_eax, int id_ecx, int *eax, int *ebx, int *ecx, int *edx);

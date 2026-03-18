@@ -28,6 +28,7 @@ APP_HELS = \
 	apps/gview/gview.hel \
 	apps/hview/hview.hel \
 	apps/invader/invader.hel \
+	apps/memmap/memmap.hel \
 	apps/mtorz/mtorz.hel \
 	apps/music/music.hel \
 	apps/note/note.hel \
@@ -56,6 +57,7 @@ apps : libs
 	$(MAKE) -C ./apps/gview
 	$(MAKE) -C ./apps/hview
 	$(MAKE) -C ./apps/invader
+	$(MAKE) -C ./apps/memmap
 	$(MAKE) -C ./apps/mtorz
 	$(MAKE) -C ./apps/music
 	$(MAKE) -C ./apps/note
@@ -94,6 +96,7 @@ Helo_OS.img : kernel/ipl20.bin kernel/Helo_OS.sys $(APP_HELS) Makefile
 		copy from:apps/cvtg/cvtg.hel to:@: \
 		copy from:apps/counter/counter.hel to:@: \
 		copy from:apps/video/video.hel to:@: \
+		copy from:apps/memmap/memmap.hel to:@: \
 		copy from:apps/mtorz/mtorz.hel to:@: \
 		copy from:data/daigo.mld to:@: \
 		copy from:data/daiku.mld to:@: \
@@ -127,6 +130,7 @@ clean :
 	-$(MAKE) -C ./apps/gview src_only
 	-$(MAKE) -C ./apps/hview src_only
 	-$(MAKE) -C ./apps/invader src_only
+	-$(MAKE) -C ./apps/memmap src_only
 	-$(MAKE) -C ./apps/mtorz src_only
 	-$(MAKE) -C ./apps/music src_only
 	-$(MAKE) -C ./apps/note src_only
