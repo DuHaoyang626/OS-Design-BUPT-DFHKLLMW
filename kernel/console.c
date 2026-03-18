@@ -266,9 +266,9 @@ void cmd_help(struct CONSOLE *cons)
 void cmd_mem(struct CONSOLE *cons, int memtotal)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
-	char s[60];
+	char s[96];
 	long int notfree = memtotal / 1048576 - memman_total(memman) / 1048576;
-	sprintf(s, "\n内存总量：  %dMB\n可用内存：  %dMB\n已用内存：  %dMB\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree);
+	sprintf(s, "\n内存总量：  %dMB\n可用内存：  %dMB\n已用内存：  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
 	cons_putstr0(cons, s);
 	return;
 }
@@ -728,6 +728,26 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			if (eax == RTC_HOURS && !(j & 0x02) && (i & 0x80))
 				i = ((i & 0x7F) + 12) % 24;
 			reg[7] = i;
+			break;
+		case 36:
+			if (ecx < 0) {
+				ecx = 0;
+			}
+			if (ebx != 0) {
+				*((int *) (ebx + ds_base)) = memman_total(memman);
+			}
+			if (ecx > memman->frees) {
+				ecx = memman->frees;
+			}
+			for (i = 0; i < ecx; i++) {
+				*((unsigned int *) (eax + ds_base + i * 8 + 0)) = memman->free[i].addr;
+				*((unsigned int *) (eax + ds_base + i * 8 + 4)) = memman->free[i].size;
+			}
+			reg[7] = ecx;
+			break;
+		case 37:
+			reg[7] = memman_get_algo_id();
+			break;
 	}
 	return 0;
 }
