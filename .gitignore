@@ -1,0 +1,14 @@
+*.lst
+*.obj
+*.map
+*.bim
+*.org
+*.hel
+Helo_OS.img
+z_tools/qemu/fdimage0.bin
+apps/apilib/apilib.lib
+apps/stdlib/stdlib.lib
+kernel/asmhead.bin
+kernel/hankaku.bin
+kernel/Helo_OS.sys
+kernel/ipl20.bin

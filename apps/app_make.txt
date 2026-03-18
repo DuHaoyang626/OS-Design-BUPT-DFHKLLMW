@@ -1,0 +1,127 @@
+##################################
+#   Helo OS  app_make.txt
+##################################
+#          BY:STON
+##################################
+
+# 打包app时使用，相当于app的Makefile
+#######################################
+
+
+##定义目录
+################################
+TOOLPATH = ../../z_tools/
+INCPATH  = ../../z_tools/HeloInclude/
+APILIBPATH   = ../apilib/
+STDLIBPATH   = ../stdlib/
+HARIBOTEPATH = ../../kernel/
+##定义工具
+###############################
+MAKE     = $(TOOLPATH)make.exe -r
+NASK     = $(TOOLPATH)nask.exe
+CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -I../ -Os -Wall -quiet
+GAS2NASK = $(TOOLPATH)gas2nask.exe -a
+OBJ2BIM  = $(TOOLPATH)obj2bim.exe
+MAKEFONT = $(TOOLPATH)makefont.exe
+BIN2OBJ  = $(TOOLPATH)bin2obj.exe
+BIM2HRB  = $(TOOLPATH)bim2hel.exe
+BIM2BIN  = $(TOOLPATH)bim2bin.exe
+RULEFILE = ../application_program_rule.rul
+EDIMG    = $(TOOLPATH)edimg.exe
+IMGTOL   = $(TOOLPATH)imgtol.com
+GOLIB    = $(TOOLPATH)golib00.exe 
+COPY     = copy
+DEL      = del
+
+################
+#   预设编译
+################
+default :
+	$(MAKE) $(APP).hel
+
+#####################################################
+#                 以下为app打包部分                 #
+#####################################################
+$(APP).bim : $(APP).obj $(APILIBPATH)apilib.lib Makefile ../app_make.txt
+	$(OBJ2BIM) @$(RULEFILE) out:$(APP).bim map:$(APP).map stack:$(STACK) \
+		$(APP).obj $(APILIBPATH)apilib.lib $(STDLIBPATH)stdlib.lib
+#####################################################
+#                   到这里结束                      #
+#####################################################
+
+
+#####################################################
+#               make run 打包镜像                   #
+#####################################################
+Helo_OS.img : ../../kernel/ipl20.bin ../../kernel/Helo_OS.sys $(APP).hel \
+		Makefile ../app_make.txt
+	$(EDIMG)   imgin:../../z_tools/fdimg0at.tek \
+		wbinimg src:../../kernel/ipl20.bin len:512 from:0 to:0 \
+		copy from:../../kernel/Helo_OS.sys to:@: \
+		copy from:$(APP).hel to:@: \
+		copy from:../../data/chinese/HZK16.fnt to:@: \
+		copy from:../../data/heloos.jpg to:@: \
+		imgout:Helo_OS.img
+#####################################################
+#                   到这里结束                      #
+#####################################################
+
+
+%.gas : %.c ../apilib.h Makefile ../app_make.txt
+	$(CC1) -o $*.gas $*.c
+
+%.nas : %.gas Makefile ../app_make.txt
+	$(GAS2NASK) $*.gas $*.nas
+
+%.obj : %.nas Makefile ../app_make.txt
+	$(NASK) $*.nas $*.obj $*.lst
+
+%.org : %.bim Makefile ../app_make.txt
+	$(BIM2HRB) $*.bim $*.org $(MALLOC)
+
+%.hel : %.org Makefile ../app_make.txt
+	$(BIM2BIN) -osacmp in:$*.org out:$*.hel
+
+
+# make run编译选项
+# 执行打包镜像后运行
+#################################
+run :
+	$(MAKE) Helo_OS.img
+	$(COPY) Helo_OS.img ..\..\z_tools\qemu\fdimage0.bin
+	$(MAKE) -C ../../z_tools/qemu
+
+# 到这里结束
+##################################
+
+
+# 清除编译后的预编译，二进制文件
+###################################
+clean :
+	-$(DEL) *.lst
+	-$(DEL) *.obj
+	-$(DEL) *.map
+	-$(DEL) *.bim
+	-$(DEL) *.org
+	-$(DEL) Helo_OS.img
+################################
+
+
+###########################
+# 以下参数不常用
+###########################
+full :
+	$(MAKE) -C $(APILIBPATH)
+	$(MAKE) -C $(STDLIBPATH)
+	$(MAKE) $(APP).hel
+
+run_full :
+	$(MAKE) -C $(APILIBPATH)
+	$(MAKE) -C $(STDLIBPATH)
+	$(MAKE) -C ../../kernel
+	$(MAKE) run
+
+
+src_only :
+	$(MAKE) clean
+	-$(DEL) $(APP).hel

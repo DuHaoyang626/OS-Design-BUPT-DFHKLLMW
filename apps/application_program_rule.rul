@@ -1,0 +1,13 @@
+format:
+	code(align:1, logic:0x24,      file:0x24);
+	data(align:4, logic:stack_end, file:code_end);
+
+file:
+
+	../../z_tools/HeloInclude/Helo_OS_Link_lib.lib;
+	../../z_tools/HeloInclude/golibc.lib;
+
+label:
+
+	_HariStartup;
+
