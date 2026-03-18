@@ -4,7 +4,7 @@ OBJS_API =	api001.obj api002.obj api003.obj api004.obj api005.obj api006.obj \
 			api019.obj api020.obj api021.obj api022.obj api023.obj api024.obj \
 			api025.obj api026.obj api027.obj api028.obj api029.obj api030.obj \
 			api031.obj api032.obj api033.obj api034.obj api035.obj api036.obj \
-			api037.obj api038.obj api039.obj alloca.obj\
+			api037.obj api038.obj api039.obj api040.obj alloca.obj\
 			tomo1001.obj tomo1003.obj \
 			osak4002.obj osak4003.obj \
 
@@ -26,22 +26,22 @@ GOLIB    = $(TOOLPATH)golib00.exe
 COPY     = copy
 DEL      = del
 
-# ƒfƒtƒHƒ‹ƒg“®ì
+# ï¿½fï¿½tï¿½Hï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½
 
 default :
 	$(MAKE) apilib.lib
 
-# ƒtƒ@ƒCƒ‹¶¬‹K‘¥
+# ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Kï¿½ï¿½
 
 apilib.lib : Makefile $(OBJS_API)
 	$(GOLIB) $(OBJS_API) out:apilib.lib
 
-# ˆê”Ê‹K‘¥
+# ï¿½ï¿½Ê‹Kï¿½ï¿½
 
 %.obj : %.nas Makefile
 	$(NASK) $*.nas $*.obj $*.lst
 
-# ƒRƒ}ƒ“ƒh
+# ï¿½Rï¿½}ï¿½ï¿½ï¿½h
 
 clean :
 	-$(DEL) *.lst
