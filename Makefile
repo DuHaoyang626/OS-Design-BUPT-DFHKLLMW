@@ -101,7 +101,6 @@ Helo_OS.img : kernel/ipl20.bin kernel/Helo_OS.sys $(APP_HELS) Makefile
 		copy from:data/daigo.mld to:@: \
 		copy from:data/daiku.mld to:@: \
 		copy from:data/star.mld to:@: \
-		copy from:data/a.htm to:@: \
 		copy from:data/moon.txt to:@: \
 		copy from:data/dog.jpg to:@: \
 		copy from:data/helo.vdo to:@: \
