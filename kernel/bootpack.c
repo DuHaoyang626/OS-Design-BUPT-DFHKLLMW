@@ -30,6 +30,72 @@ void keywin_on(struct SHEET *key_win);
 void close_console(struct SHEET *sht);
 void close_constask(struct TASK *task);
 
+void task_mon(struct SHEET *sht) {
+	struct TASK *task = task_now();
+	struct TIMER *timer;
+	int fifobuf[128];
+	int i, j, y;
+	char s[32];
+
+	fifo32_init(&task->fifo, 128, fifobuf, task);
+	timer = timer_alloc();
+	timer_init(timer, &task->fifo, 1);
+	timer_settime(timer, 50);
+
+	for (;;) {
+		io_cli();
+		if (fifo32_status(&task->fifo) == 0) {
+			task_sleep(task);
+			io_sti();
+		} else {
+			i = fifo32_get(&task->fifo);
+			io_sti();
+			if (i == 1) {
+				boxfill8(sht->buf, sht->bxsize, COL8_C6C6C6, 0, 50, 199, 300);
+				y = 50;
+				for (j = 0; j < MAX_TASKS; j++) {
+					if (taskctl->tasks0[j].flags != 0) {
+						sprintf(s, "T=%03d LV=%02d P=%02d F=%d", j, taskctl->tasks0[j].level, taskctl->tasks0[j].priority, taskctl->tasks0[j].flags);
+						putfonts8_asc_sht(sht, 10, y, COL8_000000, COL8_C6C6C6, s, 23);
+						y += 16;
+						if (y >= 290) break;
+					}
+				}
+				sheet_refresh(sht, 0, 50, 200, 300);
+				timer_settime(timer, 50);
+			}
+		}
+	}
+}
+
+void task_hog(void) {
+	for(;;){}
+}
+
+/* Interactive task */
+void task_interactive(void) {
+	struct TASK *task = task_now();
+	struct TIMER *timer;
+	int fifobuf[128];
+
+	fifo32_init(&task->fifo, 128, fifobuf, task);
+	timer = timer_alloc();
+	timer_init(timer, &task->fifo, 1);
+	timer_settime(timer, 10);
+
+	for (;;) {
+		io_cli();
+		if (fifo32_status(&task->fifo) == 0) {
+			task_sleep(task);
+			io_sti();
+		} else {
+			fifo32_get(&task->fifo);
+			io_sti();
+			timer_settime(timer, 10);
+		}
+	}
+}
+
 void _main()
 {
 	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
@@ -167,6 +233,42 @@ void _main()
 
 	*((int *) 0x0fe8) = (int) nihongo;
 	memman_free_4k(memman, (int) fat, 4 * 2880);
+
+	struct TASK *task_mon_t = task_alloc();
+	task_mon_t->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024 - 8;
+	task_mon_t->tss.eip = (int) &task_mon;
+	task_mon_t->tss.es = 1 * 8; task_mon_t->tss.cs = 2 * 8;
+	task_mon_t->tss.ss = 1 * 8; task_mon_t->tss.ds = 1 * 8;
+	task_mon_t->tss.fs = 1 * 8; task_mon_t->tss.gs = 1 * 8;
+	*((int *) (task_mon_t->tss.esp + 4)) = (int) sht_back;
+	task_run(task_mon_t, 1, 0);
+
+	struct TASK *task_hog_t;
+	for (i = 0; i < 5; i++) {
+		task_hog_t = task_alloc();
+		task_hog_t->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+		task_hog_t->tss.eip = (int) &task_hog;
+		task_hog_t->tss.es = 1 * 8; task_hog_t->tss.cs = 2 * 8;
+		task_hog_t->tss.ss = 1 * 8; task_hog_t->tss.ds = 1 * 8;
+		task_hog_t->tss.fs = 1 * 8; task_hog_t->tss.gs = 1 * 8;
+		task_run(task_hog_t, 2, 0);
+	}
+
+	struct TASK *task_io_t = task_alloc();
+	task_io_t->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+	task_io_t->tss.eip = (int) &task_interactive;
+	task_io_t->tss.es = 1 * 8; task_io_t->tss.cs = 2 * 8;
+	task_io_t->tss.ss = 1 * 8; task_io_t->tss.ds = 1 * 8;
+	task_io_t->tss.fs = 1 * 8; task_io_t->tss.gs = 1 * 8;
+	task_run(task_io_t, 2, 0);
+
+	struct TASK *task_hog_low = task_alloc();
+	task_hog_low->tss.esp = memman_alloc_4k(memman, 64 * 1024) + 64 * 1024;
+	task_hog_low->tss.eip = (int) &task_hog;
+	task_hog_low->tss.es = 1 * 8; task_hog_low->tss.cs = 2 * 8;
+	task_hog_low->tss.ss = 1 * 8; task_hog_low->tss.ds = 1 * 8;
+	task_hog_low->tss.fs = 1 * 8; task_hog_low->tss.gs = 1 * 8;
+	task_run(task_hog_low, MAX_TASKLEVELS - 2, 0); // one level above idle
 
 	for (;;) {
 		if (fifo32_status(&keycmd) > 0 && keycmd_wait < 0) {
