@@ -251,6 +251,7 @@ struct TSS32 {
 struct TASK {
 	int sel, flags;
 	int level, priority;
+	unsigned int enqueue_tick; //记录任务进入就绪队列的时间。
 	struct FIFO32 fifo;
 	struct TSS32 tss;
 	struct SEGMENT_DESCRIPTOR ldt[2];
