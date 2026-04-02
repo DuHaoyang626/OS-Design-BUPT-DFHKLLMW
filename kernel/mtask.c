@@ -45,8 +45,8 @@ static int task_aging_limit(int level)
 	return TASK_AGING_TICKS * (level + 1);
 }
 
-//任务老化函数。
-//检查所有就绪队列中的任务，如果它们等待的时间超过了对应层级的老化限制，就将它们提升到更高的层级。
+//任务老化函数�?
+//检查所有就绪队列中的任务，如果它们等待的时间超过了对应层级的老化限制，就将它们提升到更高的层级�?
 static void task_apply_aging(struct TASK *current_task)
 {
 	unsigned int now = timerctl.count;
@@ -76,7 +76,7 @@ void task_add(struct TASK *task)
 	struct TASKLEVEL *tl = &taskctl->level[task->level];
 	tl->tasks[tl->running] = task;
 	tl->running++;
-	task->enqueue_tick = timerctl.count; //记录任务进入就绪队列的时间，每次重新入队重新开始等待计时。
+	task->enqueue_tick = timerctl.count; //记录任务进入就绪队列的时间，每次重新入队重新开始等待计时�?
 	task->flags = 2; /* ���쒆 */
 	return;
 }
@@ -96,7 +96,7 @@ void task_remove(struct TASK *task)
 
 	tl->running--;
 	if (i < tl->now) {
-		tl->now--; /* �����̂ŁA��������킹�Ă��� */
+		tl->now--; /* �����̂ŁA��������킹�Ă���?*/
 	}
 	if (tl->now >= tl->running) {
 		/* now���������Ȓl�ɂȂ��Ă�����A�C������ */
@@ -154,7 +154,7 @@ struct TASK *task_init(struct MEMMAN *memman)
 
 	task = task_alloc();
 	task->flags = 2;	/* ���쒆�}�[�N */
-	task->priority = task_quantum_for_level(0); //把初始任务和 idle 任务的时间片改成由层级自动决定，不再手工固定。
+	task->priority = task_quantum_for_level(0); //把初始任务和 idle 任务的时间片改成由层级自动决定，不再手工固定�?
 	task->level = 0;	/* �ō����x�� */
 	task_add(task);
 	task_switchsub();	/* ���x���ݒ� */
@@ -171,7 +171,7 @@ struct TASK *task_init(struct MEMMAN *memman)
 	idle->tss.ds = 1 * 8;
 	idle->tss.fs = 1 * 8;
 	idle->tss.gs = 1 * 8;
-	task_run(idle, MAX_TASKLEVELS - 1, 0); // idle 任务放在最低层，时间片最长。
+	task_run(idle, MAX_TASKLEVELS - 1, 0); // idle 任务放在最低层，时间片最长�?
 
 	return task;
 }
@@ -216,7 +216,7 @@ void task_run(struct TASK *task, int level, int priority)
 	}
 
 	if (task->flags == 2 && task->level != level) { /* ���쒆�̃��x���̕ύX */
-		task_remove(task); /* ��������s�����flags��1�ɂȂ�̂ŉ���if�����s����� */
+		task_remove(task); /* ��������s�����flags��1�ɂȂ�̂ŉ���if�����s�����?*/
 	}
 	if (task->flags != 2) {
 		/* �X���[�v����N�������ꍇ */
@@ -245,31 +245,34 @@ void task_sleep(struct TASK *task)
 	return;
 }
 
-//把启动时的 task_run 调用改成不再硬编码时间片，让调度器自己根据层级决定。
+//把启动时�?task_run 调用改成不再硬编码时间片，让调度器自己根据层级决定�?
 void task_switch(void)
 {
-	struct TASK *now_task = task_now();
-	struct TASKLEVEL *tl = &taskctl->level[taskctl->now_lv];
-	struct TASK *new_task;
+struct TASKLEVEL *tl = &taskctl->level[taskctl->now_lv];
+struct TASK *new_task, *now_task = tl->tasks[tl->now];
 
-	task_apply_aging(now_task);
-	if (now_task->level < MAX_TASKLEVELS - 1) {
-		/* �����^�X�N���ʔԂ�񑗂��ĂA���x�������Ȃ� */
-		task_run(now_task, now_task->level + 1, 0);
-	}
+task_apply_aging(now_task);
 
-	if (taskctl->lv_change != 0) {
-		task_switchsub();
-	}
-	tl = &taskctl->level[taskctl->now_lv];
-	new_task = tl->tasks[tl->now];
-	tl->now++;
-	if (tl->now == tl->running) {
-		tl->now = 0;
-	}
-	timer_settime(task_timer, new_task->priority);
-	if (new_task != now_task) {
-		farjmp(0, new_task->sel);
-	}
-	return;
+if (now_task->level < MAX_TASKLEVELS - 1) {
+/* ������һ������ʱ��Ƭ������ */
+task_run(now_task, now_task->level + 1, 0);
+} else {
+/* ��ͼ�����ת */
+tl->now++;
+if (tl->now == tl->running) {
+tl->now = 0;
+}
+}
+
+if (taskctl->lv_change != 0) {
+task_switchsub();
+tl = &taskctl->level[taskctl->now_lv];
+}
+
+new_task = tl->tasks[tl->now];
+timer_settime(task_timer, new_task->priority);
+if (new_task != now_task) {
+farjmp(0, new_task->sel);
+}
+return;
 }
