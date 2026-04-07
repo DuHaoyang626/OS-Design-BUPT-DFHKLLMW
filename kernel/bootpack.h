@@ -3,7 +3,7 @@
 // COPYRIGHT (C) 2019-2020 STON
 // ����Դ������
 // STON/PENGZZEKAI/HELO
-// 
+//
 // =================================
 //
 // 2357749867@qq.com
@@ -19,9 +19,9 @@
  |--|  |--|   \_____/   |--|   \\___/ /
 */
 
-
 /* asmhead.nas */
-struct BOOTINFO { /* 0x0ff0-0x0fff */
+struct BOOTINFO
+{ /* 0x0ff0-0x0fff */
 	char cyls;
 	char leds;
 	char vmode;
@@ -29,8 +29,8 @@ struct BOOTINFO { /* 0x0ff0-0x0fff */
 	short scrnx, scrny;
 	char *vram;
 };
-#define ADR_BOOTINFO	0x00000ff0
-#define ADR_DISKIMG		0x00100000
+#define ADR_BOOTINFO 0x00000ff0
+#define ADR_DISKIMG 0x00100000
 
 /* naskfunc.nas */
 void io_hlt(void);
@@ -59,7 +59,8 @@ void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
 
 /* fifo.c */
-struct FIFO32 {
+struct FIFO32
+{
 	int *buf;
 	int p, q, size, free, flags;
 	struct TASK *task;
@@ -79,43 +80,46 @@ void putfonts8_asc(char *vram, int xsize, int x, int y, char c, unsigned char *s
 void init_mouse_cursor8(char *mouse, char bc);
 void init_mouse_pen_cursor8(char *mouse, char bc);
 void putblock8_8(char *vram, int vxsize, int pxsize,
-int pysize, int px0, int py0, char *buf, int bxsize);
+								 int pysize, int px0, int py0, char *buf, int bxsize);
 int read_picture(int *fat, char *vram, int x, int y); /* ��� */
-#define COL8_000000 	0
-#define COL8_FF0000 	1
-#define COL8_00FF00 	2
-#define COL8_FFFF00 	3
-#define COL8_0000FF 	4
-#define COL8_FF00FF 	5
-#define COL8_00FFFF 	6
-#define COL8_FFFFFF 	7
-#define COL8_C6C6C6 	8
-#define COL8_840000 	9
-#define COL8_008400 	10
-#define COL8_848400 	11
-#define COL8_000084 	12
-#define COL8_840084 	13
-#define COL8_008484 	14
-#define COL8_848484 	15
+#define COL8_000000 0
+#define COL8_FF0000 1
+#define COL8_00FF00 2
+#define COL8_FFFF00 3
+#define COL8_0000FF 4
+#define COL8_FF00FF 5
+#define COL8_00FFFF 6
+#define COL8_FFFFFF 7
+#define COL8_C6C6C6 8
+#define COL8_840000 9
+#define COL8_008400 10
+#define COL8_848400 11
+#define COL8_000084 12
+#define COL8_840084 13
+#define COL8_008484 14
+#define COL8_848484 15
 
 /*jpeg.c*/
-struct DLL_STRPICENV{
+struct DLL_STRPICENV
+{
 	int work[64 * 1024 / 4];
 };
-struct RGB{
-	unsigned char b,g,r,t;
+struct RGB
+{
+	unsigned char b, g, r, t;
 };
-int info_JPEG(struct DLL_STRPICENV*env,int *info,int size,unsigned char *fp);
-int decode0_JPEG(struct DLL_STRPICENV*env,int size,unsigned char *fp,int b_type,unsigned char *buf,int skip);
-
+int info_JPEG(struct DLL_STRPICENV *env, int *info, int size, unsigned char *fp);
+int decode0_JPEG(struct DLL_STRPICENV *env, int size, unsigned char *fp, int b_type, unsigned char *buf, int skip);
 
 /* dsctbl.c */
-struct SEGMENT_DESCRIPTOR {
+struct SEGMENT_DESCRIPTOR
+{
 	short limit_low, base_low;
 	char base_mid, access_right;
 	char limit_high, base_high;
 };
-struct GATE_DESCRIPTOR {
+struct GATE_DESCRIPTOR
+{
 	short offset_low, selector;
 	char dw_count, access_right;
 	short offset_high;
@@ -123,42 +127,43 @@ struct GATE_DESCRIPTOR {
 void init_gdtidt(void);
 void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
 void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
-#define ADR_IDT			0x0026f800
-#define LIMIT_IDT		0x000007ff
-#define ADR_GDT			0x00270000
-#define LIMIT_GDT		0x0000ffff
-#define ADR_BOTPAK		0x00280000
-#define LIMIT_BOTPAK	0x0007ffff
-#define AR_DATA32_RW	0x4092
-#define AR_CODE32_ER	0x409a
-#define AR_LDT			0x0082
-#define AR_TSS32		0x0089
-#define AR_INTGATE32	0x008e
+#define ADR_IDT 0x0026f800
+#define LIMIT_IDT 0x000007ff
+#define ADR_GDT 0x00270000
+#define LIMIT_GDT 0x0000ffff
+#define ADR_BOTPAK 0x00280000
+#define LIMIT_BOTPAK 0x0007ffff
+#define AR_DATA32_RW 0x4092
+#define AR_CODE32_ER 0x409a
+#define AR_LDT 0x0082
+#define AR_TSS32 0x0089
+#define AR_INTGATE32 0x008e
 
 /* int.c */
 void init_pic(void);
-#define PIC0_ICW1		0x0020
-#define PIC0_OCW2		0x0020
-#define PIC0_IMR		0x0021
-#define PIC0_ICW2		0x0021
-#define PIC0_ICW3		0x0021
-#define PIC0_ICW4		0x0021
-#define PIC1_ICW1		0x00a0
-#define PIC1_OCW2		0x00a0
-#define PIC1_IMR		0x00a1
-#define PIC1_ICW2		0x00a1
-#define PIC1_ICW3		0x00a1
-#define PIC1_ICW4		0x00a1
+#define PIC0_ICW1 0x0020
+#define PIC0_OCW2 0x0020
+#define PIC0_IMR 0x0021
+#define PIC0_ICW2 0x0021
+#define PIC0_ICW3 0x0021
+#define PIC0_ICW4 0x0021
+#define PIC1_ICW1 0x00a0
+#define PIC1_OCW2 0x00a0
+#define PIC1_IMR 0x00a1
+#define PIC1_ICW2 0x00a1
+#define PIC1_ICW3 0x00a1
+#define PIC1_ICW4 0x00a1
 
 /* keyboard.c */
 void inthandler21(int *esp);
 void wait_KBC_sendready(void);
 void init_keyboard(struct FIFO32 *fifo, int data0);
-#define PORT_KEYDAT		0x0060
-#define PORT_KEYCMD		0x0064
+#define PORT_KEYDAT 0x0060
+#define PORT_KEYCMD 0x0064
 
 /* mouse.c */
-struct MOUSE_DEC {
+struct MOUSE_DEC
+{
 	unsigned char buf[3], phase;
 	int x, y, btn;
 };
@@ -167,17 +172,19 @@ void enable_mouse(struct FIFO32 *fifo, int data0, struct MOUSE_DEC *mdec);
 int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
 
 /* memory.c */
-#define MEMMAN_FREES		4090
-#define MEMMAN_ADDR			0x003c0000
-#define MEM_ALLOC_ALGO_LEGACY	0
-#define MEM_ALLOC_ALGO_FIRST_FIT	1
-#define MEM_ALLOC_ALGO_NEXT_FIT	2
-#define MEM_ALLOC_ALGO_BEST_FIT	3
-#define MEM_ALLOC_ALGO_WORST_FIT	4
-struct FREEINFO {
+#define MEMMAN_FREES 4090
+#define MEMMAN_ADDR 0x003c0000
+#define MEM_ALLOC_ALGO_LEGACY 0
+#define MEM_ALLOC_ALGO_FIRST_FIT 1
+#define MEM_ALLOC_ALGO_NEXT_FIT 2
+#define MEM_ALLOC_ALGO_BEST_FIT 3
+#define MEM_ALLOC_ALGO_WORST_FIT 4
+struct FREEINFO
+{
 	unsigned int addr, size;
 };
-struct MEMMAN {
+struct MEMMAN
+{
 	int frees, maxfrees, lostsize, losts;
 	struct FREEINFO free[MEMMAN_FREES];
 };
@@ -192,14 +199,16 @@ int memman_get_algo_id(void);
 char *memman_get_algo_name(void);
 
 /* sheet.c */
-#define MAX_SHEETS		256
-struct SHEET {
+#define MAX_SHEETS 256
+struct SHEET
+{
 	unsigned char *buf;
 	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
 	struct SHTCTL *ctl;
 	struct TASK *task;
 };
-struct SHTCTL {
+struct SHTCTL
+{
 	unsigned char *vram, *map;
 	int xsize, ysize, top;
 	struct SHEET *sheets[MAX_SHEETS];
@@ -214,15 +223,17 @@ void sheet_slide(struct SHEET *sht, int vx0, int vy0);
 void sheet_free(struct SHEET *sht);
 
 /* timer.c */
-#define MAX_TIMER		500
-struct TIMER {
+#define MAX_TIMER 500
+struct TIMER
+{
 	struct TIMER *next;
 	unsigned int timeout;
 	char flags, flags2;
 	struct FIFO32 *fifo;
 	int data;
 };
-struct TIMERCTL {
+struct TIMERCTL
+{
 	unsigned int count, next;
 	struct TIMER *t0;
 	struct TIMER timers0[MAX_TIMER];
@@ -238,20 +249,22 @@ int timer_cancel(struct TIMER *timer);
 void timer_cancelall(struct FIFO32 *fifo);
 
 /* mtask.c */
-#define MAX_TASKS		1000
-#define TASK_GDT0		3
-#define MAX_TASKS_LV	100
-#define MAX_TASKLEVELS	10
-struct TSS32 {
+#define MAX_TASKS 1000
+#define TASK_GDT0 3
+#define MAX_TASKS_LV 100
+#define MAX_TASKLEVELS 10
+struct TSS32
+{
 	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
 	int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
 	int es, cs, ss, ds, fs, gs;
 	int ldtr, iomap;
 };
-struct TASK {
+struct TASK
+{
 	int sel, flags;
 	int level, priority;
-	unsigned int enqueue_tick; //记录任务进入就绪队列的时间。
+	unsigned int enqueue_tick; // 记录任务进入就绪队列的时间。
 	struct FIFO32 fifo;
 	struct TSS32 tss;
 	struct SEGMENT_DESCRIPTOR ldt[2];
@@ -262,12 +275,14 @@ struct TASK {
 	char *cmdline;
 	unsigned char langmode, langbyte1;
 };
-struct TASKLEVEL {
+struct TASKLEVEL
+{
 	int running;
 	int now;
 	struct TASK *tasks[MAX_TASKS_LV];
 };
-struct TASKCTL {
+struct TASKCTL
+{
 	int now_lv;
 	char lv_change;
 	struct TASKLEVEL level[MAX_TASKLEVELS];
@@ -275,12 +290,14 @@ struct TASKCTL {
 };
 extern struct TASKCTL *taskctl;
 extern struct TIMER *task_timer;
+extern int g_sched_enable_aging;
 struct TASK *task_now(void);
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
 void task_run(struct TASK *task, int level, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);
+int task_aging_limit_for_level(int level);
 
 /* window.c */
 void make_window8(unsigned char *buf, int xsize, int ysize, char *title, char act);
@@ -290,12 +307,14 @@ void make_wtitle8(unsigned char *buf, int xsize, char *title, char act);
 void change_wtitle8(struct SHEET *sht, char act);
 
 /* console.c */
-struct CONSOLE {
+struct CONSOLE
+{
 	struct SHEET *sht;
 	int cur_x, cur_y, cur_c;
 	struct TIMER *timer;
 };
-struct FILEHANDLE {
+struct FILEHANDLE
+{
 	char *buf;
 	int size;
 	int pos;
@@ -306,6 +325,7 @@ void cons_newline(struct CONSOLE *cons);
 void cons_putstr0(struct CONSOLE *cons, char *s);
 void cons_putstr1(struct CONSOLE *cons, char *s, int l);
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal);
+void cmd_taskmon(struct CONSOLE *cons, int memtotal);
 void cmd_mem(struct CONSOLE *cons, int memtotal);
 void cmd_cls(struct CONSOLE *cons);
 void cmd_ls(struct CONSOLE *cons);
@@ -323,7 +343,8 @@ int *inthandler0c(int *esp);
 void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col);
 
 /* file.c */
-struct FILEINFO {
+struct FILEINFO
+{
 	unsigned char name[8], ext[3], type;
 	char reserve[10];
 	unsigned short time, date, clustno;
@@ -341,26 +362,27 @@ int tek_decomp(unsigned char *p, char *q, int size);
 /* bootpack.c */
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
+struct SHEET *open_taskmon(struct SHTCTL *shtctl, unsigned int memtotal);
 
 /*cmos.c*/
 #define cmos_index 0x70
 #define cmos_data 0x71
-#define CMOS_CUR_SEC	0x0
-#define CMOS_ALA_SEC	0x1
-#define CMOS_CUR_MIN	0x2
-#define CMOS_ALA_MIN	0x3
-#define CMOS_CUR_HOUR	0x4
-#define CMOS_ALA_HOUR	0x5
-#define CMOS_WEEK_DAY	0x6
-#define CMOS_MON_DAY	0x7
-#define CMOS_CUR_MON	0x8
-#define CMOS_CUR_YEAR	0x9
-#define CMOS_DEV_TYPE	0x12
-#define CMOS_CUR_CEN	0x32
-#define BCD_HEX(n)	((n >> 4) * 10) + (n & 0xf)
+#define CMOS_CUR_SEC 0x0
+#define CMOS_ALA_SEC 0x1
+#define CMOS_CUR_MIN 0x2
+#define CMOS_ALA_MIN 0x3
+#define CMOS_CUR_HOUR 0x4
+#define CMOS_ALA_HOUR 0x5
+#define CMOS_WEEK_DAY 0x6
+#define CMOS_MON_DAY 0x7
+#define CMOS_CUR_MON 0x8
+#define CMOS_CUR_YEAR 0x9
+#define CMOS_DEV_TYPE 0x12
+#define CMOS_CUR_CEN 0x32
+#define BCD_HEX(n) ((n >> 4) * 10) + (n & 0xf)
 
-#define BCD_ASCII_first(n)	(((n<<4)>>4)+0x30)
-#define BCD_ASCII_S(n)	((n<<4)+0x30)
+#define BCD_ASCII_first(n) (((n << 4) >> 4) + 0x30)
+#define BCD_ASCII_S(n) ((n << 4) + 0x30)
 
 unsigned int get_hour_hex();
 unsigned int get_min_hex();
