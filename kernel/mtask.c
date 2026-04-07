@@ -238,7 +238,7 @@ void task_run(struct TASK *task, int level, int priority)
 {
 	if (level < 0)
 	{
-		level = task->level; /* ���x����ύX���Ȃ� */
+		level = task->level; /* ���x����ύX���Ȃ*/
 	}
 	if (priority > 0)
 	{

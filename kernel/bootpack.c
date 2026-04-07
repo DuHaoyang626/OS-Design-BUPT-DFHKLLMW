@@ -30,7 +30,8 @@
 	1: CPU-bound demotion test
 	2: interactive responsiveness test
 	3: starvation/aging test
-	4: CPU-bound demotion test (aging off) */
+	4: CPU-bound demotion test (aging off)
+*/
 #define SCHED_TEST_DEFAULT 0
 #define SCHED_TEST_CPU_BOUND 1
 #define SCHED_TEST_INTERACTIVE 2
