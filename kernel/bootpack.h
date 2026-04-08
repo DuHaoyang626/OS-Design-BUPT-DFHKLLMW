@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // HELO OS BY:STON 2020
 // COPYRIGHT (C) 2019-2020 STON
-// ����Դ������
+// ???????????
 // STON/PENGZZEKAI/HELO
 // 
 // =================================
@@ -58,6 +58,18 @@ void asm_hrb_api(void);
 void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
 void asm_end_app(void);
 
+/* memfs.c (in-memory filesystem) */
+int memfs_format(int disk_kb);
+int memfs_ready(void);
+int memfs_mkdir(const char *path);
+int memfs_create(const char *path);
+int memfs_delete(const char *path);
+int memfs_write(const char *path, int offset, const char *buf, int len);
+int memfs_read(const char *path, int offset, char *buf, int len);
+int memfs_getsize(const char *path);
+int memfs_list(const char *path, char *outbuf, int outbuf_len);
+int memfs_copy(const char *src, const char *dst);
+
 /* fifo.c */
 struct FIFO32 {
 	int *buf;
@@ -80,7 +92,7 @@ void init_mouse_cursor8(char *mouse, char bc);
 void init_mouse_pen_cursor8(char *mouse, char bc);
 void putblock8_8(char *vram, int vxsize, int pxsize,
 int pysize, int px0, int py0, char *buf, int bxsize);
-int read_picture(int *fat, char *vram, int x, int y); /* ��� */
+int read_picture(int *fat, char *vram, int x, int y); /* ???? */
 #define COL8_000000 	0
 #define COL8_FF0000 	1
 #define COL8_00FF00 	2
