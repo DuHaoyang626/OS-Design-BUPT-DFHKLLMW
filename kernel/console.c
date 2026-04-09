@@ -300,6 +300,14 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 	{
 		cmd_taskmon(cons, memtotal);
 	}
+	else if (strcmp(cmdline, "syncdemo") == 0)
+	{
+		/*
+		 * syncdemo: 打开“竞争条件/信号量/读写者”综合监视窗口
+		 * 说明：首次执行会触发内核演示任务集初始化，后续执行只新增监视窗口
+		 */
+		cmd_syncdemo(cons, memtotal);
+	}
 	else if (strncmp(cmdline, "start", 6) == 0)
 	{
 		cmd_start(cons, cmdline, memtotal);
@@ -342,6 +350,7 @@ void cmd_help(struct CONSOLE *cons)
 	cons_putstr0(cons, "type            �����в鿴\n");
 	cons_putstr0(cons, "calc            �����м�����\n");
 	cons_putstr0(cons, "task            进程调度参数窗口\n");
+	cons_putstr0(cons, "syncdemo        竞争条件/信号量/读写者监视\n");
 	cons_putstr0(cons, "�����Tview help.txt -w70 -h30\n��ȡ����İ���\n\n");
 	return;
 }
@@ -352,6 +361,21 @@ void cmd_taskmon(struct CONSOLE *cons, int memtotal)
 	if (open_taskmon(shtctl, memtotal) == 0)
 	{
 		cons_putstr0(cons, "\n�������̵��Ȳ�������\n");
+	}
+	cons_newline(cons);
+	return;
+}
+
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	/*
+	 * 通过bootpack侧窗口工厂函数打开监视窗口。
+	 * open_syncmon返回0表示资源不足或初始化失败。
+	 */
+	if (open_syncmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "\nsyncdemo窗口打开失败\n");
 	}
 	cons_newline(cons);
 	return;

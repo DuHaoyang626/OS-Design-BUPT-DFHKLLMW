@@ -326,6 +326,7 @@ void cons_putstr0(struct CONSOLE *cons, char *s);
 void cons_putstr1(struct CONSOLE *cons, char *s, int l);
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal);
 void cmd_taskmon(struct CONSOLE *cons, int memtotal);
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal);
 void cmd_mem(struct CONSOLE *cons, int memtotal);
 void cmd_cls(struct CONSOLE *cons);
 void cmd_ls(struct CONSOLE *cons);
@@ -363,6 +364,7 @@ int tek_decomp(unsigned char *p, char *q, int size);
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
 struct SHEET *open_taskmon(struct SHTCTL *shtctl, unsigned int memtotal);
+struct SHEET *open_syncmon(struct SHTCTL *shtctl, unsigned int memtotal);
 
 /*cmos.c*/
 #define cmos_index 0x70
