@@ -94,8 +94,9 @@ Helo_OS.img : kernel/ipl20.bin kernel/Helo_OS.sys $(APP_HELS) Makefile
 		copy from:apps/csvv/csvv.hel to:@: \
 		copy from:apps/cpuid/cpuid.hel to:@: \
 		copy from:apps/cvtg/cvtg.hel to:@: \
-		copy from:apps/counter/counter.hel to:@: \
-		copy from:apps/video/video.hel to:@: \
+	copy from:apps/counter/counter.hel to:@: \
+	copy from:apps/syncdemo/syncdemo.hel to:@: \
+	copy from:apps/video/video.hel to:@: \
 		copy from:apps/memmap/memmap.hel to:@: \
 		copy from:apps/mtorz/mtorz.hel to:@: \
 		copy from:data/daigo.mld to:@: \

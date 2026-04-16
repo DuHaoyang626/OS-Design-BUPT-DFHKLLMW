@@ -354,7 +354,7 @@ static void start_kernel_worker(void (*entry)(void), int level)
  * 只初始化一次演示任务集：
  * 包含无锁竞争组、加锁竞争组、读者组、写者组
  */
-static void syncdemo_start_once(void)
+void syncdemo_start_once(void)
 {
 	int i;
 

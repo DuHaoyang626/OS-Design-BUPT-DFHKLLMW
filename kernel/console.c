@@ -938,6 +938,9 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 	case 37:
 		reg[7] = memman_get_algo_id();
 		break;
+	case 60:
+		open_syncmon(shtctl, 0);
+		break;
 	}
 	return 0;
 }

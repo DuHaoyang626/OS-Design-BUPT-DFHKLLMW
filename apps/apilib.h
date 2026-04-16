@@ -43,6 +43,7 @@ void api_closewin(int win);
 int api_getkey(int mode); //win结束
 
 //app
+void api_syncdemo_start(void);
 int api_alloctimer(void);
 void api_inittimer(int timer, int data);
 void api_settimer(int timer, int time);
