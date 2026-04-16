@@ -44,6 +44,13 @@ int api_getkey(int mode); //win结束
 
 //app
 void api_syncdemo_start(void);
+
+// user sync test
+void api_sync_reset(void);
+int api_get_shared(void);
+void api_set_shared(int val);
+void api_sem_wait(void);
+void api_sem_post(void);
 int api_alloctimer(void);
 void api_inittimer(int timer, int data);
 void api_settimer(int timer, int time);
@@ -81,3 +88,16 @@ void tomo_setlang(int land);
 /* OSAkkie API */
 void osak_putministrwin(int win, int x, int y, int col, int len, char *str);
 void osak_exec(char *name);
+
+// User sequence / Kernel synchronization logic 
+void api_open_syncmon(void);
+int api_mutex_create(void);
+void api_mutex_lock(int mutex_id);
+void api_mutex_unlock(int mutex_id);
+void api_mutex_destroy(int mutex_id);
+void api_sync_init(void);
+
+// Producer-Consumer
+void api_pc_init(void);
+void api_pc_produce(int val);
+int api_pc_consume(void);

@@ -308,11 +308,11 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		 */
 		cmd_syncdemo(cons, memtotal);
 	}
-	else if (strncmp(cmdline, "start", 6) == 0)
+	else if (strncmp(cmdline, "start ", 6) == 0)
 	{
 		cmd_start(cons, cmdline, memtotal);
 	}
-	else if (strncmp(cmdline, "ncst", 5) == 0)
+	else if (strncmp(cmdline, "ncst ", 5) == 0)
 	{
 		cmd_ncst(cons, cmdline, memtotal);
 	}
@@ -940,6 +940,30 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		break;
 	case 60:
 		open_syncmon(shtctl, 0);
+		break;
+	case 61: // get user shared var
+		reg[7] = g_user_shared_var;
+		break;
+	case 62: // set user shared var
+		g_user_shared_var = eax;
+		break;
+	case 63: // user sem wait
+		user_sem_wait();
+		break;
+	case 64: // user sem post
+		user_sem_post();
+		break;
+	case 65: // user sequence reset
+		user_sync_init();
+		break;
+	case 66: // user pc init
+		user_pc_init();
+		break;
+	case 67: // user pc produce
+		user_pc_produce(eax);
+		break;
+	case 68: // user pc consume
+		reg[7] = user_pc_consume();
 		break;
 	}
 	return 0;

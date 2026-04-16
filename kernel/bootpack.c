@@ -217,6 +217,64 @@ static void ksem_signal(struct KSEMAPHORE *sem)
 	}
 }
 
+int g_user_shared_var = 0;
+struct KSEMAPHORE g_user_sem;
+
+void user_sync_init(void)
+{
+	g_user_shared_var = 0;
+	ksem_init(&g_user_sem, 1);
+}
+
+void user_sem_wait(void)
+{
+	ksem_wait(&g_user_sem);
+}
+
+void user_sem_post(void)
+{
+	ksem_signal(&g_user_sem);
+}
+
+#define PC_BUFFER_SIZE 5
+int g_pc_buffer[PC_BUFFER_SIZE];
+int g_pc_in = 0;
+int g_pc_out = 0;
+struct KSEMAPHORE g_sem_pc_mutex;
+struct KSEMAPHORE g_sem_pc_empty;
+struct KSEMAPHORE g_sem_pc_full;
+
+void user_pc_init(void)
+{
+	g_pc_in = 0;
+	g_pc_out = 0;
+	ksem_init(&g_sem_pc_mutex, 1);
+	ksem_init(&g_sem_pc_empty, PC_BUFFER_SIZE);
+	ksem_init(&g_sem_pc_full, 0);
+}
+
+void user_pc_produce(int val)
+{
+	ksem_wait(&g_sem_pc_empty);
+	ksem_wait(&g_sem_pc_mutex);
+	g_pc_buffer[g_pc_in] = val;
+	g_pc_in = (g_pc_in + 1) % PC_BUFFER_SIZE;
+	ksem_signal(&g_sem_pc_mutex);
+	ksem_signal(&g_sem_pc_full);
+}
+
+int user_pc_consume(void)
+{
+	int val;
+	ksem_wait(&g_sem_pc_full);
+	ksem_wait(&g_sem_pc_mutex);
+	val = g_pc_buffer[g_pc_out];
+	g_pc_out = (g_pc_out + 1) % PC_BUFFER_SIZE;
+	ksem_signal(&g_sem_pc_mutex);
+	ksem_signal(&g_sem_pc_empty);
+	return val;
+}
+
 /* 纯计算延时：用于放大竞争窗口，便于观察实验现象 */
 static void sync_delay(int loops)
 {
@@ -379,6 +437,7 @@ void syncdemo_start_once(void)
 	ksem_init(&g_sem_counter_lock, 1);
 	ksem_init(&g_sem_rw_count, 1);
 	ksem_init(&g_sem_rw_resource, 1);
+	user_sync_init();
 
 	/* 启动竞争条件演示任务 */
 	for (i = 0; i < SYNC_RACE_UNSAFE_TASKS; i++)

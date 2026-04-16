@@ -361,6 +361,15 @@ int tek_getsize(unsigned char *p);
 int tek_decomp(unsigned char *p, char *q, int size);
 
 /* bootpack.c */
+extern int g_user_shared_var;
+void user_sync_init(void);
+void user_sem_wait(void);
+void user_sem_post(void);
+
+void user_pc_init(void);
+void user_pc_produce(int val);
+int user_pc_consume(void);
+
 void syncdemo_start_once(void);
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
