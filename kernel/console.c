@@ -310,8 +310,37 @@ static void cmd_memfs_help(struct CONSOLE *cons)
 static void cmd_memfs_putret(struct CONSOLE *cons, int ret)
 {
 	char s[64];
-	sprintf(s, "ret=%d\n", ret);
+	if (ret >= 0) {
+		sprintf(s, "[OK] ret=%d\n", ret);
+		cons_putstr0(cons, s);
+		return;
+	}
+	cons_putstr0(cons, "[ERR] ");
+	sprintf(s, "ret=%d ", ret);
 	cons_putstr0(cons, s);
+	switch (ret) {
+		case -1:
+			cons_putstr0(cons, "EINVAL\n");
+			break;
+		case -2:
+			cons_putstr0(cons, "ENOSPACE\n");
+			break;
+		case -3:
+			cons_putstr0(cons, "NOTFOUND\n");
+			break;
+		case -4:
+			cons_putstr0(cons, "EXISTS\n");
+			break;
+		case -5:
+			cons_putstr0(cons, "NOTDIR\n");
+			break;
+		case -6:
+			cons_putstr0(cons, "ISDIR\n");
+			break;
+		default:
+			cons_putstr0(cons, "ERROR\n");
+			break;
+	}
 }
 
 static int cmd_memfs_skipsp(const char *s)
@@ -337,61 +366,124 @@ static int cmd_memfs_token(const char *s, int i, char *out, int outsz)
 	return i;
 }
 
+static int cmd_memfs_atoi(const char *s)
+{
+	int i = 0;
+	int sign = 1;
+	int val = 0;
+	if (s == 0) {
+		return 0;
+	}
+	while (s[i] == ' ' || s[i] == '\t') {
+		i++;
+	}
+	if (s[i] == '-') {
+		sign = -1;
+		i++;
+	} else if (s[i] == '+') {
+		i++;
+	}
+	while (s[i] >= '0' && s[i] <= '9') {
+		val = val * 10 + (s[i] - '0');
+		i++;
+	}
+	return sign * val;
+}
+
 static void cmd_mformat(struct CONSOLE *cons, char *cmdline)
 {
 	char a[32];
+	int kb, ret;
 	cmd_memfs_token(cmdline, 7, a, sizeof(a));
 	if (a[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mformat <kb>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_format(atoi(a)));
+	kb = cmd_memfs_atoi(a);
+	cons_putstr0(cons, "mformat ");
+	cons_putstr0(cons, a);
+	cons_putstr0(cons, " KB\n");
+	ret = memfs_format(kb);
+	cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mmkdir(struct CONSOLE *cons, char *cmdline)
 {
 	char path[128];
+	int ret;
 	cmd_memfs_token(cmdline, 6, path, sizeof(path));
 	if (path[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mmkdir <path>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_mkdir(path));
+	cons_putstr0(cons, "mmkdir ");
+	cons_putstr0(cons, path);
+	cons_putstr0(cons, "\n");
+	ret = memfs_mkdir(path);
+	cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mcreate(struct CONSOLE *cons, char *cmdline)
 {
 	char path[128];
+	int ret;
 	cmd_memfs_token(cmdline, 7, path, sizeof(path));
 	if (path[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mcreate <path>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_create(path));
+	cons_putstr0(cons, "mcreate ");
+	cons_putstr0(cons, path);
+	cons_putstr0(cons, "\n");
+	ret = memfs_create(path);
+	cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mls(struct CONSOLE *cons, char *cmdline)
 {
 	char path[128];
 	char out[512];
+	int ret;
 	cmd_memfs_token(cmdline, 3, path, sizeof(path));
 	if (path[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mls <path>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_list(path, out, sizeof(out)));
-	cons_putstr0(cons, out);
+	cons_putstr0(cons, "mls ");
+	cons_putstr0(cons, path);
+	cons_putstr0(cons, "\n");
+	ret = memfs_list(path, out, sizeof(out));
+	cmd_memfs_putret(cons, ret);
+	if (ret >= 0) {
+		if (ret >= (int) sizeof(out)) {
+			ret = sizeof(out) - 1;
+		}
+		out[ret] = 0;
+		if (ret == 0 || out[0] == 0) {
+			cons_putstr0(cons, "(empty)\n");
+		} else {
+			cons_putstr0(cons, out);
+			if (out[ret - 1] != '\n') {
+				cons_putstr0(cons, "\n");
+			}
+		}
+	}
 }
 
 static void cmd_mrm(struct CONSOLE *cons, char *cmdline)
 {
 	char path[128];
+	int ret;
 	cmd_memfs_token(cmdline, 3, path, sizeof(path));
 	if (path[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mrm <path>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_delete(path));
+	cons_putstr0(cons, "mrm ");
+	cons_putstr0(cons, path);
+	cons_putstr0(cons, "\n");
+	ret = memfs_delete(path);
+	cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mcopy(struct CONSOLE *cons, char *cmdline)
@@ -399,13 +491,20 @@ static void cmd_mcopy(struct CONSOLE *cons, char *cmdline)
 	char src[128];
 	char dst[128];
 	int i;
+	int ret;
 	i = cmd_memfs_token(cmdline, 5, src, sizeof(src));
 	cmd_memfs_token(cmdline, i, dst, sizeof(dst));
 	if (src[0] == 0 || dst[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mcopy <src> <dst>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_copy(src, dst));
+	cons_putstr0(cons, "mcopy ");
+	cons_putstr0(cons, src);
+	cons_putstr0(cons, " -> ");
+	cons_putstr0(cons, dst);
+	cons_putstr0(cons, "\n");
+	ret = memfs_copy(src, dst);
+	cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mwrite(struct CONSOLE *cons, char *cmdline)
@@ -415,20 +514,33 @@ static void cmd_mwrite(struct CONSOLE *cons, char *cmdline)
 	int i;
 	int off;
 	const char *text;
+	int ret;
 	i = cmd_memfs_token(cmdline, 6, path, sizeof(path));
 	i = cmd_memfs_token(cmdline, i, off_s, sizeof(off_s));
 	if (path[0] == 0 || off_s[0] == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mwrite <path> <off> <text>\n");
 		return;
 	}
-	off = atoi(off_s);
+	off = cmd_memfs_atoi(off_s);
 	i += cmd_memfs_skipsp(cmdline + i);
 	text = cmdline + i;
 	if (*text == 0) {
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mwrite <path> <off> <text>\n");
 		return;
 	}
-	cmd_memfs_putret(cons, memfs_write(path, off, (char *) text, strlen(text)));
+	cons_putstr0(cons, "mwrite ");
+	cons_putstr0(cons, path);
+	cons_putstr0(cons, " off=");
+	cons_putstr0(cons, off_s);
+	cons_putstr0(cons, " len=");
+	{
+		char s[32];
+		sprintf(s, "%d", (int) strlen(text));
+		cons_putstr0(cons, s);
+	}
+	cons_putstr0(cons, "\n");
+	ret = memfs_write(path, off, (char *) text, strlen(text));
+	cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mread(struct CONSOLE *cons, char *cmdline)
@@ -446,20 +558,30 @@ static void cmd_mread(struct CONSOLE *cons, char *cmdline)
 		cons_putstr0(cons, "\xD3\xC3\xB7\xA8\x3A\x20mread <path> <off> <len>\n");
 		return;
 	}
-	off = atoi(off_s);
-	len = atoi(len_s);
+	off = cmd_memfs_atoi(off_s);
+	len = cmd_memfs_atoi(len_s);
 	if (len < 0) {
 		len = 0;
 	}
 	if (len > (int) (sizeof(buf) - 1)) {
 		len = sizeof(buf) - 1;
 	}
+	cons_putstr0(cons, "mread ");
+	cons_putstr0(cons, path);
+	cons_putstr0(cons, " off=");
+	cons_putstr0(cons, off_s);
+	cons_putstr0(cons, " len=");
+	cons_putstr0(cons, len_s);
+	cons_putstr0(cons, "\n");
 	ret = memfs_read(path, off, buf, len);
 	cmd_memfs_putret(cons, ret);
 	if (ret > 0) {
 		buf[ret] = 0;
+		cons_putstr0(cons, "data: ");
 		cons_putstr0(cons, buf);
 		cons_putstr0(cons, "\n");
+	} else if (ret == 0) {
+		cons_putstr0(cons, "(empty)\n");
 	}
 }
 
