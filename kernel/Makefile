@@ -14,6 +14,7 @@ INCPATH  = ../z_tools/HeloInclude/
 MAKE     = $(TOOLPATH)make.exe -r
 NASK     = $(TOOLPATH)nask.exe
 MEM_ALLOC_ALGO ?= LEGACY
+MMU_MODE ?= SEGMENT
 
 ifeq ($(MEM_ALLOC_ALGO),FIRST_FIT)
 ALLOC_DEF = -DMEM_ALLOC_ALGO=1
@@ -33,7 +34,17 @@ else
 	endif
 endif
 
-CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet $(ALLOC_DEF)
+ifeq ($(MMU_MODE),SEG_PAGE)
+MMU_DEF = -DMMU_MODE=1
+else
+	ifeq ($(MMU_MODE),PAGE)
+	MMU_DEF = -DMMU_MODE=1
+	else
+	MMU_DEF = -DMMU_MODE=0
+	endif
+endif
+
+CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet $(ALLOC_DEF) $(MMU_DEF)
 GAS2NASK = $(TOOLPATH)gas2nask.exe -a
 OBJ2BIM  = $(TOOLPATH)obj2bim.exe
 MAKEFONT = $(TOOLPATH)makefont.exe

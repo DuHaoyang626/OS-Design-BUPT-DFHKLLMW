@@ -24,6 +24,7 @@
 
 #define EFLAGS_AC_BIT		0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
+#define CR0_PAGING_ENABLE	0x80000000
 
 #ifndef MEM_ALLOC_ALGO
 #define MEM_ALLOC_ALGO 0
@@ -36,6 +37,7 @@
 #define MEM_ALLOC_ALGO_WORST_FIT	4
 
 static int memman_rr_next = 0;
+int kernel_cr3 = 0;
 
 static void memman_remove_free(struct MEMMAN *man, int i)
 {
@@ -325,4 +327,102 @@ int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size)
 	size = (size + 0xfff) & 0xfffff000;
 	i = memman_free(man, addr, size);
 	return i;
+}
+
+int paging_identity_map_init(struct MEMMAN *man, unsigned int memtotal)
+{
+#if MMU_MODE == MMU_MODE_SEG_PAGE
+	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
+	unsigned int pd_addr, pt_addr;
+	unsigned int *pd, *pt;
+	unsigned int map_end, table_count;
+	unsigned int i, j, page_addr, cr0;
+	unsigned int vram_start, vram_end, vram_first_pde, vram_last_pde;
+
+	map_end = (memtotal + 0xfff) & 0xfffff000;
+	if (map_end == 0) {
+		return -1;
+	}
+
+	pd_addr = memman_alloc_4k(man, 0x1000);
+	if (pd_addr == 0) {
+		return -1;
+	}
+	pd = (unsigned int *) pd_addr;
+	for (i = 0; i < 1024; i++) {
+		pd[i] = 0;
+	}
+
+	table_count = (map_end + 0x003fffff) >> 22;
+	for (i = 0; i < table_count; i++) {
+		pt_addr = memman_alloc_4k(man, 0x1000);
+		if (pt_addr == 0) {
+			goto paging_init_error;
+		}
+		pt = (unsigned int *) pt_addr;
+		for (j = 0; j < 1024; j++) {
+			page_addr = (i << 22) + (j << 12);
+			if (page_addr < map_end) {
+				pt[j] = page_addr | 0x007;
+			} else {
+				pt[j] = 0;
+			}
+		}
+		pd[i] = pt_addr | 0x007;
+	}
+
+	vram_start = (unsigned int) binfo->vram;
+	vram_end = vram_start + (unsigned int) binfo->scrnx * (unsigned int) binfo->scrny;
+	if (vram_end <= vram_start) {
+		if (vram_start <= 0xfff00000) {
+			vram_end = vram_start + 0x00100000;
+		} else {
+			vram_end = 0xffffffff;
+		}
+	}
+
+	vram_first_pde = vram_start >> 22;
+	vram_last_pde = (vram_end - 1) >> 22;
+	if (vram_end > map_end) {
+		for (i = vram_first_pde; i <= vram_last_pde && i < 1024; i++) {
+			if ((pd[i] & 0x001) != 0) {
+				continue;
+			}
+			pt_addr = memman_alloc_4k(man, 0x1000);
+			if (pt_addr == 0) {
+				goto paging_init_error;
+			}
+			pt = (unsigned int *) pt_addr;
+			for (j = 0; j < 1024; j++) {
+				page_addr = (i << 22) + (j << 12);
+				pt[j] = page_addr | 0x007;
+			}
+			pd[i] = pt_addr | 0x007;
+		}
+	}
+
+	kernel_cr3 = (int) pd_addr;
+	io_cli();
+	store_cr3(kernel_cr3);
+	cr0 = (unsigned int) load_cr0();
+	store_cr0((int) (cr0 | CR0_PAGING_ENABLE));
+	io_sti();
+	return 0;
+
+paging_init_error:
+	for (i = 0; i < 1024; i++) {
+		if ((pd[i] & 0x001) != 0) {
+			memman_free_4k(man, pd[i] & 0xfffff000, 0x1000);
+			pd[i] = 0;
+		}
+	}
+	memman_free_4k(man, pd_addr, 0x1000);
+	kernel_cr3 = 0;
+	return -1;
+#else
+	(void) man;
+	(void) memtotal;
+	kernel_cr3 = 0;
+	return 0;
+#endif
 }
