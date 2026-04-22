@@ -214,7 +214,7 @@ void sheet_slide(struct SHEET *sht, int vx0, int vy0);
 void sheet_free(struct SHEET *sht);
 
 /* timer.c */
-#define MAX_TIMER		500
+#define MAX_TIMER		800
 struct TIMER {
 	struct TIMER *next;
 	unsigned int timeout;
