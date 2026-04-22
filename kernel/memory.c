@@ -25,6 +25,8 @@
 #define EFLAGS_AC_BIT		0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
 #define CR0_PAGING_ENABLE	0x80000000
+#define KERNEL_HIGH_VADDR_BASE	0xc0000000
+#define KERNEL_HIGH_PDE_BASE	(KERNEL_HIGH_VADDR_BASE >> 22)
 
 #ifndef MEM_ALLOC_ALGO
 #define MEM_ALLOC_ALGO 0
@@ -335,7 +337,7 @@ int paging_identity_map_init(struct MEMMAN *man, unsigned int memtotal)
 	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
 	unsigned int pd_addr, pt_addr;
 	unsigned int *pd, *pt;
-	unsigned int map_end, table_count;
+	unsigned int map_end, table_count, high_table_count;
 	unsigned int i, j, page_addr, cr0;
 	unsigned int vram_start, vram_end, vram_first_pde, vram_last_pde;
 
@@ -354,6 +356,9 @@ int paging_identity_map_init(struct MEMMAN *man, unsigned int memtotal)
 	}
 
 	table_count = (map_end + 0x003fffff) >> 22;
+	if (table_count > 1024) {
+		table_count = 1024;
+	}
 	for (i = 0; i < table_count; i++) {
 		pt_addr = memman_alloc_4k(man, 0x1000);
 		if (pt_addr == 0) {
@@ -399,6 +404,22 @@ int paging_identity_map_init(struct MEMMAN *man, unsigned int memtotal)
 			}
 			pd[i] = pt_addr | 0x007;
 		}
+	}
+
+	/* Keep identity map for bootstrap, and mirror low physical memory at 3GB+.
+	 * Example: 0x00280000 -> 0xc0280000. */
+	high_table_count = table_count;
+	if (high_table_count > (1024 - KERNEL_HIGH_PDE_BASE)) {
+		high_table_count = 1024 - KERNEL_HIGH_PDE_BASE;
+	}
+	for (i = 0; i < high_table_count; i++) {
+		if ((pd[i] & 0x001) == 0) {
+			continue;
+		}
+		if ((pd[KERNEL_HIGH_PDE_BASE + i] & 0x001) != 0) {
+			continue;
+		}
+		pd[KERNEL_HIGH_PDE_BASE + i] = pd[i];
 	}
 
 	kernel_cr3 = (int) pd_addr;

@@ -137,6 +137,8 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define ADR_GDT			0x00270000
 #define LIMIT_GDT		0x0000ffff
 #define ADR_BOTPAK		0x00280000
+#define KERNEL_VIRT_BASE	0xc0000000
+#define KERNEL_VIRT_ADDR(paddr)	((unsigned int) (paddr) + KERNEL_VIRT_BASE)
 #define LIMIT_BOTPAK	0x0007ffff
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
