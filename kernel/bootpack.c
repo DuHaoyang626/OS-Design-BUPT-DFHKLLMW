@@ -498,7 +498,15 @@ static void sync_mon_refresh(struct SHEET *sht)
 	putfonts8_asc_sht(sht, 10, 198, COL8_000000, COL8_C6C6C6, s, 66);
 
 	putfonts8_asc_sht(sht, 10, 224, COL8_000000, COL8_C6C6C6,
-										"Expected: unsafe lost>0, safe lost~0, violations should stay 0", 59);
+		"[PRODUCER-CONSUMER] ring buffer, empty/full semaphores", 54);
+	sprintf(s, "in=%d  out=%d  mutex_wait=%d",
+		g_pc_in, g_pc_out, g_sem_pc_mutex.wait_count);
+	putfonts8_asc_sht(sht, 10, 240, COL8_000000, COL8_C6C6C6, s, 60);
+
+	sprintf(s, "empty_wait=%d  full_wait=%d",
+		g_sem_pc_empty.wait_count, g_sem_pc_full.wait_count);
+	putfonts8_asc_sht(sht, 10, 256, COL8_000000, COL8_C6C6C6, s, 60);
+
 	sheet_refresh(sht, 3, 24, sht->bxsize - 3, sht->bysize - 3);
 }
 
