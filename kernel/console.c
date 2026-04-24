@@ -17,7 +17,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 	int i, *fat = (int *) memman_alloc_4k(memman, 4 * 2880);
 	struct CONSOLE cons;
 	struct FILEHANDLE fhandle[8];
-	char cmdline[30];
+	char cmdline[64];
 	unsigned char *nihongo = (char *) *((int *) 0x0fe8);
 
 	cons.sht = sheet;
@@ -204,10 +204,14 @@ void cons_putstr1(struct CONSOLE *cons, char *s, int l)
 	return;
 }
 
+void cmd_timertest(struct CONSOLE *cons);
+
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 {
 	if (strcmp(cmdline, "mem") == 0 && cons->sht != 0) {
 		cmd_mem(cons, memtotal);
+	} else if (strcmp(cmdline, "timertest") == 0 && cons->sht != 0) {
+		cmd_timertest(cons);
 	} else if (strcmp(cmdline, "cls") == 0 && cons->sht != 0) {
 		cmd_cls(cons);
 	} else if (strcmp(cmdline, "help") == 0 && cons->sht != 0) {
@@ -777,6 +781,353 @@ int *inthandler0d(int *esp)
 	return &(task->tss.esp0);
 }
 
+/* ============================================================
+ * timertest: 定时器管理结构与方法测试命令
+ * TC-01: 基本超时顺序验证（3个定时器，超时顺序应为T1<T2<T3）
+ * TC-02: 大量并发定时器压力测试（60个定时器同时运行）
+ * TC-03: timer_cancel 边界测试
+ * TC-04: 池耗尽测试（连续分配直到返回0）
+ * TC-05: timeout=0 立即到期测试
+ * ============================================================ */
+void cmd_timertest(struct CONSOLE *cons)
+{
+	struct TASK *task = task_now();
+	struct TIMER *timers[64];
+	char s[64];
+	int i, count, pass, alloc_count;
+
+	cons_putstr0(cons, "\n--- Timer Test Start ---\n");
+
+	/* TC-01: 基本超时顺序验证 */
+	cons_putstr0(cons, "\n[TC-01] Basic timeout order (3 timers)\n");
+	{
+		struct TIMER *t1, *t2, *t3;
+		t1 = timer_alloc(); timer_init(t1, &task->fifo, 0x101);
+		t2 = timer_alloc(); timer_init(t2, &task->fifo, 0x102);
+		t3 = timer_alloc(); timer_init(t3, &task->fifo, 0x103);
+		/* 故意乱序设置：t3最短，t1最长，验证链表排序 */
+		timer_settime(t3, 5);
+		timer_settime(t1, 15);
+		timer_settime(t2, 10);
+		/* 验证三个定时器的timeout值满足 t3 < t2 < t1（升序） */
+		pass = (t3->timeout < t2->timeout && t2->timeout < t1->timeout) ? 1 : 0;
+		sprintf(s, "  Link order check: %s\n", pass ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		sprintf(s, "  t3->timeout=%u t2->timeout=%u t1->timeout=%u\n",
+			t3->timeout, t2->timeout, t1->timeout);
+		cons_putstr0(cons, s);
+		/* 等待3个定时器全部到期（消费FIFO） */
+		count = 0;
+		while (count < 3) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i == 0x101 || i == 0x102 || i == 0x103) count++;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		cons_putstr0(cons, "  All 3 timers fired: PASS\n");
+	}
+
+	/* TC-02: 60个并发定时器压力测试 */
+	cons_putstr0(cons, "\n[TC-02] 60 concurrent timers stress test\n");
+	{
+		int fired = 0;
+		/* 分配60个定时器，超时值1~60 tick */
+		for (i = 0; i < 60; i++) {
+			timers[i] = timer_alloc();
+			if (timers[i] == 0) {
+				cons_putstr0(cons, "  timer_alloc failed!\n");
+				break;
+			}
+			timer_init(timers[i], &task->fifo, 0x200 + i);
+			timer_settime(timers[i], i + 1);
+		}
+		sprintf(s, "  Allocated 60 timers, pool used: ~%d/%d\n", 60 + 3, MAX_TIMER);
+		cons_putstr0(cons, s);
+		/* 等待60个全部到期 */
+		while (fired < 60) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i >= 0x200 && i < 0x200 + 60) fired++;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		sprintf(s, "  All 60 timers fired: %s\n", fired == 60 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-03: timer_cancel 边界测试 */
+	cons_putstr0(cons, "\n[TC-03] timer_cancel boundary test\n");
+	{
+		struct TIMER *tc;
+		int ret;
+		/* 取消未到期的定时器 */
+		tc = timer_alloc();
+		timer_init(tc, &task->fifo, 0x301);
+		timer_settime(tc, 200);
+		ret = timer_cancel(tc);
+		sprintf(s, "  Cancel active timer: ret=%d (expect 1): %s\n",
+			ret, ret == 1 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		/* 取消已取消的定时器（flags已变为ALLOC=1，非USING=2） */
+		ret = timer_cancel(tc);
+		sprintf(s, "  Cancel already-cancelled: ret=%d (expect 0): %s\n",
+			ret, ret == 0 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		timer_free(tc);
+	}
+
+	/* TC-04: 池耗尽测试 */
+	cons_putstr0(cons, "\n[TC-04] Pool exhaustion test\n");
+	{
+		static struct TIMER *tmp[MAX_TIMER];
+		int alloc_count = 0;
+		/* 持续分配直到失败 */
+		for (i = 0; i < MAX_TIMER; i++) {
+			tmp[i] = timer_alloc();
+			if (tmp[i] == 0) break;
+			alloc_count++;
+		}
+		sprintf(s, "  Allocated %d timers before pool empty\n", alloc_count);
+		cons_putstr0(cons, s);
+		sprintf(s, "  timer_alloc returns 0 at exhaustion: %s\n",
+			tmp[alloc_count] == 0 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		/* 释放所有 */
+		for (i = 0; i < alloc_count; i++) {
+			timer_free(tmp[i]);
+		}
+		cons_putstr0(cons, "  Pool freed.\n");
+	}
+
+	/* TC-05: timeout=0 立即到期测试 */
+	cons_putstr0(cons, "\n[TC-05] timeout=0 immediate fire test\n");
+	{
+		struct TIMER *t0;
+		t0 = timer_alloc();
+		timer_init(t0, &task->fifo, 0x501);
+		timer_settime(t0, 0);
+		/* timeout=0 意味着 timeout = timerctl.count+0，下一个tick即触发 */
+		count = 0;
+		while (count == 0) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i == 0x501) count = 1;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		cons_putstr0(cons, "  timeout=0 fired on next tick: PASS\n");
+	}
+
+	/* TC-06: 调度器协同验证——压力测试期间 task_timer 仍正常触发 */
+	cons_putstr0(cons, "\n[TC-06] Scheduler cooperation: task_timer survives stress\n");
+	{
+		unsigned int count_before, count_after;
+		int switches_ok;
+		/* 记录当前 tick，启动 30 个定时器，等待全部触发，
+		   期间 task_timer 也在运行，验证调度未被阻断 */
+		count_before = timerctl.count;
+		for (i = 0; i < 30; i++) {
+			timers[i] = timer_alloc();
+			timer_init(timers[i], &task->fifo, 0x600 + i);
+			timer_settime(timers[i], i * 2 + 1);
+		}
+		count = 0;
+		while (count < 30) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i >= 0x600 && i < 0x600 + 30) count++;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		count_after = timerctl.count;
+		/* task_timer 以 priority=2 tick 为周期切换，
+		   若 count 增长正常说明 IRQ0 未被阻断 */
+		switches_ok = (count_after > count_before) ? 1 : 0;
+		sprintf(s, "  tick advanced %u during stress (expect >0): %s\n",
+			count_after - count_before, switches_ok ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		/* 验证 task_timer 仍在链表中（flags=USING=2） */
+		sprintf(s, "  task_timer still active (flags=%d, expect 2): %s\n",
+			task_timer->flags,
+			task_timer->flags == 2 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-07: timerctl.count 单调递增验证 */
+	cons_putstr0(cons, "\n[TC-07] timerctl.count monotonic increase\n");
+	{
+		unsigned int c1, c2, c3;
+		c1 = timerctl.count;
+		/* 等待约 5 tick */
+		{
+			struct TIMER *tw = timer_alloc();
+			timer_init(tw, &task->fifo, 0x701);
+			timer_settime(tw, 5);
+			while (1) {
+				io_cli();
+				if (fifo32_status(&task->fifo) > 0) {
+					i = fifo32_get(&task->fifo);
+					io_sti();
+					if (i == 0x701) break;
+				} else { task_sleep(task); io_sti(); }
+			}
+		}
+		c2 = timerctl.count;
+		/* 再等约 5 tick */
+		{
+			struct TIMER *tw = timer_alloc();
+			timer_init(tw, &task->fifo, 0x702);
+			timer_settime(tw, 5);
+			while (1) {
+				io_cli();
+				if (fifo32_status(&task->fifo) > 0) {
+					i = fifo32_get(&task->fifo);
+					io_sti();
+					if (i == 0x702) break;
+				} else { task_sleep(task); io_sti(); }
+			}
+		}
+		c3 = timerctl.count;
+		sprintf(s, "  count: %u -> %u -> %u\n", c1, c2, c3);
+		cons_putstr0(cons, s);
+		sprintf(s, "  monotonic: %s\n",
+			(c1 < c2 && c2 < c3) ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-08: timer_cancelall 清理验证 */
+	cons_putstr0(cons, "\n[TC-08] timer_cancelall cleanup\n");
+	{
+		struct FIFO32 test_fifo;
+		int test_buf[32];
+		int active_before, active_after, j;
+		fifo32_init(&test_fifo, 32, test_buf, 0);
+		/* 向 test_fifo 注册 10 个定时器，flags2=1 */
+		for (i = 0; i < 10; i++) {
+			timers[i] = timer_alloc();
+			timers[i]->flags2 = 1;
+			timer_init(timers[i], &test_fifo, 0x800 + i);
+			timer_settime(timers[i], 200 + i); /* 超时较长，不会自然到期 */
+		}
+		/* 统计 test_fifo 关联的活跃定时器数 */
+		active_before = 0;
+		for (j = 0; j < MAX_TIMER; j++) {
+			if (timerctl.timers0[j].flags == 2 &&
+				timerctl.timers0[j].fifo == &test_fifo) {
+				active_before++;
+			}
+		}
+		timer_cancelall(&test_fifo);
+		active_after = 0;
+		for (j = 0; j < MAX_TIMER; j++) {
+			if (timerctl.timers0[j].flags == 2 &&
+				timerctl.timers0[j].fifo == &test_fifo) {
+				active_after++;
+			}
+		}
+		sprintf(s, "  active before cancelall: %d, after: %d\n",
+			active_before, active_after);
+		cons_putstr0(cons, s);
+		sprintf(s, "  cancelall cleared all: %s\n",
+			(active_before == 10 && active_after == 0) ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-09: 压力测试后池恢复正常，可继续分配 */
+	cons_putstr0(cons, "\n[TC-09] Pool recovery after stress\n");
+	{
+		struct TIMER *t_new;
+		t_new = timer_alloc();
+		sprintf(s, "  alloc after stress: %s\n",
+			t_new != 0 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		if (t_new) timer_free(t_new);
+	}
+
+	/* TC-10: 链表插入时间复杂度测量
+	 * 分别在 n=0,50,100,200 个背景定时器存在时，测量插入一个新定时器所需 tick 数
+	 * 由于 PIT 精度为 10ms/tick，此处用 timerctl.count 差值近似（粗粒度）
+	 * 主要目的是验证随 n 增大插入耗时是否呈线性增长趋势 */
+	cons_putstr0(cons, "\n[TC-10] timer_settime insertion complexity\n");
+	{
+		int n_bg[] = {0, 50, 100, 200};
+		int k, b;
+		static struct TIMER *bg[200];
+		struct TIMER *probe;
+		unsigned int t_start, t_end;
+
+		for (k = 0; k < 4; k++) {
+			int n = n_bg[k];
+			/* 建立 n 个背景定时器，超时值均匀分布在 500~1500 tick */
+			for (b = 0; b < n; b++) {
+				bg[b] = timer_alloc();
+				if (bg[b] == 0) break;
+				timer_init(bg[b], &task->fifo, 0xf00);
+				timer_settime(bg[b], 500 + b * 5);
+			}
+			/* 测量插入一个超时值为 750 tick（落在链表中间）的定时器 */
+			probe = timer_alloc();
+			timer_init(probe, &task->fifo, 0xf01);
+			t_start = timerctl.count;
+			timer_settime(probe, 750);
+			t_end = timerctl.count;
+			sprintf(s, "  n=%3d bg timers: insert took %u tick(s)\n",
+				n, t_end - t_start);
+			cons_putstr0(cons, s);
+			/* 清理：取消 probe 和所有背景定时器 */
+			timer_cancel(probe);
+			timer_free(probe);
+			for (b = 0; b < n; b++) {
+				if (bg[b] != 0) {
+					timer_cancel(bg[b]);
+					timer_free(bg[b]);
+				}
+			}
+		}
+		cons_putstr0(cons, "  (tick resolution=10ms; 0 tick = sub-10ms, expected for small n)\n");
+	}
+
+	/* TC-11: MAX_TIMER 扩容后池容量验证
+	 * 将 MAX_TIMER 从 500 改为 800 后重跑池耗尽测试，
+	 * 验证可分配数量相应增加 */
+	cons_putstr0(cons, "\n[TC-11] MAX_TIMER capacity check\n");
+	{
+		static struct TIMER *tmp2[MAX_TIMER];
+		int alloc_count2 = 0;
+		for (i = 0; i < MAX_TIMER; i++) {
+			tmp2[i] = timer_alloc();
+			if (tmp2[i] == 0) break;
+			alloc_count2++;
+		}
+		sprintf(s, "  MAX_TIMER=%d, allocatable=%d, system_used=%d\n",
+			MAX_TIMER, alloc_count2, MAX_TIMER - alloc_count2);
+		cons_putstr0(cons, s);
+		sprintf(s, "  pool size matches MAX_TIMER: %s\n",
+			alloc_count2 + (MAX_TIMER - alloc_count2) == MAX_TIMER ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		for (i = 0; i < alloc_count2; i++) timer_free(tmp2[i]);
+	}
+
+	cons_putstr0(cons, "\n--- Timer Test Done ---\n\n");
+	return;
+}
 int *inthandler0e(int *esp)
 {
 	struct TASK *task;

@@ -24,11 +24,27 @@
 struct FIFO32 *keyfifo;
 int keydata0;
 
+/* 去抖动：记录上一次按键扫描码和时间，同一键在 DEBOUNCE_TICKS 内只接受一次 */
+#define DEBOUNCE_TICKS 3
+static int last_keydata = -1;
+static unsigned int last_keytime = 0;
+
 void inthandler21(int *esp)
 {
 	int data;
 	io_out8(PIC0_OCW2, 0x61);
 	data = io_in8(PORT_KEYDAT);
+	/* 只对 make code（< 0x80）做去抖动，break code 正常放行 */
+	if (data < 0x80) {
+		if (data == last_keydata &&
+			timerctl.count - last_keytime < DEBOUNCE_TICKS) {
+			return; /* 丢弃重复 */
+		}
+		last_keydata = data;
+		last_keytime = timerctl.count;
+	} else {
+		last_keydata = -1; /* 松键后重置，允许下次按同一键 */
+	}
 	fifo32_put(keyfifo, data + keydata0);
 	return;
 }
