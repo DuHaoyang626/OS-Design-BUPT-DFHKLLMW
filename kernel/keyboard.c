@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // HELO OS BY:STON 2020
 // COPYRIGHT (C) 2019-2020 STON
-// ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+// ºÎÀÖÔ´ÂëÆìÏÂ
 // STON/PENGZZEKAI/HELO
 // 
 // =================================
@@ -24,7 +24,7 @@
 struct FIFO32 *keyfifo;
 int keydata0;
 
-/* å»æŠ–åŠ¨ï¼šè®°å½•ä¸Šä¸€æ¬¡æŒ‰é”®æ‰«æç å’Œæ—¶é—´ï¼ŒåŒä¸€é”®åœ¨ DEBOUNCE_TICKS å†…åªæ¥å—ä¸€æ¬¡ */
+/* È¥¶¶¶¯£º¼ÇÂ¼ÉÏÒ»´Î°´¼üÉ¨ÃèÂëºÍÊ±¼ä£¬Í¬Ò»¼üÔÚ DEBOUNCE_TICKS ÄÚÖ»½ÓÊÜÒ»´Î */
 #define DEBOUNCE_TICKS 3
 static int last_keydata = -1;
 static unsigned int last_keytime = 0;
@@ -34,16 +34,16 @@ void inthandler21(int *esp)
 	int data;
 	io_out8(PIC0_OCW2, 0x61);
 	data = io_in8(PORT_KEYDAT);
-	/* åªå¯¹ make codeï¼ˆ< 0x80ï¼‰åšå»æŠ–åŠ¨ï¼Œbreak code æ­£å¸¸æ”¾è¡Œ */
+	/* Ö»¶Ô make code£¨< 0x80£©×öÈ¥¶¶¶¯£¬break code Õı³£·ÅĞĞ */
 	if (data < 0x80) {
 		if (data == last_keydata &&
 			timerctl.count - last_keytime < DEBOUNCE_TICKS) {
-			return; /* ä¸¢å¼ƒé‡å¤ */
+			return; /* ¶ªÆúÖØ¸´ */
 		}
 		last_keydata = data;
 		last_keytime = timerctl.count;
 	} else {
-		last_keydata = -1; /* æ¾é”®åé‡ç½®ï¼Œå…è®¸ä¸‹æ¬¡æŒ‰åŒä¸€é”® */
+		last_keydata = -1; /* ËÉ¼üºóÖØÖÃ£¬ÔÊĞíÏÂ´Î°´Í¬Ò»¼ü */
 	}
 	fifo32_put(keyfifo, data + keydata0);
 	return;
