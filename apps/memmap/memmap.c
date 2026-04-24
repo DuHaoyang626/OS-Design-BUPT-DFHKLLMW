@@ -34,6 +34,17 @@ static char *mem_algo_name(int algo_id)
 	return "LEGACY";
 }
 
+static char *mmu_mode_name(int mode_id)
+{
+	switch (mode_id) {
+		case 0:
+			return "SEGMENT";
+		case 1:
+			return "SEG_PAGE";
+	}
+	return "UNKNOWN";
+}
+
 static void draw_map(char *winbuf, unsigned char *state)
 {
 	int i, x0, y0, x, y, col;
@@ -62,6 +73,7 @@ int _main(void)
 	int free_pages;
 	int alloc_pages;
 	int algo_id;
+	int mmu_mode;
 	unsigned int start_page;
 	unsigned int end_page;
 	char s[64];
@@ -90,7 +102,10 @@ int _main(void)
 	algo_id = api_getmemalgo();
 	sprintf(s, "algo : %s", mem_algo_name(algo_id));
 	api_putstrwin(win, 560, 210, 0, strlen(s), s);
-	api_putstrwin(win, 560, 226, 0, 22, "press key to close(1s)");
+	mmu_mode = api_getmmumode();
+	sprintf(s, "mmu  : %s", mmu_mode_name(mmu_mode));
+	api_putstrwin(win, 560, 226, 0, strlen(s), s);
+	api_putstrwin(win, 560, 242, 0, 22, "press key to close(1s)");
 
 	timer = api_alloctimer();
 	api_inittimer(timer, 128);

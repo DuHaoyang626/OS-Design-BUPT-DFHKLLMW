@@ -110,6 +110,13 @@ void _main()
 	memman_init(memman);
 	memman_free(memman, 0x00001000, 0x0009e000);
 	memman_free(memman, 0x00400000, memtotal - 0x00400000);
+#if MMU_MODE == MMU_MODE_SEG_PAGE
+	if (paging_identity_map_init(memman, memtotal) != 0) {
+		for (;;) {
+			io_hlt();
+		}
+	}
+#endif
 
 	init_palette();
 	shtctl = shtctl_init(memman, binfo->vram, binfo->scrnx, binfo->scrny);

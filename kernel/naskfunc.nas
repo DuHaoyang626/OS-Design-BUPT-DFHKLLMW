@@ -8,18 +8,18 @@
 		GLOBAL	_io_out8, _io_out16, _io_out32
 		GLOBAL	_io_load_eflags, _io_store_eflags
 		GLOBAL	_load_gdtr, _load_idtr
-		GLOBAL	_load_cr0, _store_cr0
+		GLOBAL	_load_cr0, _store_cr0, _store_cr3, _load_cr2
 		GLOBAL	_load_tr
 		GLOBAL	_shutdown
 		GLOBAL	_asm_inthandler20, _asm_inthandler21
 		GLOBAL	_asm_inthandler2c, _asm_inthandler0c
-		GLOBAL	_asm_inthandler0d, _asm_end_app
+		GLOBAL	_asm_inthandler0d, _asm_inthandler0e, _asm_end_app
 		GLOBAL	_memtest_sub
 		GLOBAL	_farjmp, _farcall
 		GLOBAL	_asm_hrb_api, _start_app
 		EXTERN	_inthandler20, _inthandler21
 		EXTERN	_inthandler2c, _inthandler0d
-		EXTERN	_inthandler0c
+		EXTERN	_inthandler0c, _inthandler0e
 		EXTERN	_hrb_api
 
 [SECTION .text]
@@ -106,6 +106,15 @@ _load_cr0:		; int load_cr0(void);
 _store_cr0:		; void store_cr0(int cr0);
 		MOV		EAX,[ESP+4]
 		MOV		CR0,EAX
+		RET
+
+_store_cr3:		; void store_cr3(int cr3);
+		MOV		EAX,[ESP+4]
+		MOV		CR3,EAX
+		RET
+
+_load_cr2:		; int load_cr2(void);
+		MOV		EAX,CR2
 		RET
 
 _load_tr:		; void load_tr(int tr);
@@ -198,6 +207,26 @@ _asm_inthandler0d:
 		POP		DS
 		POP		ES
 		ADD		ESP,4			; INT 0x0d では、これが必要
+		IRETD
+
+_asm_inthandler0e:
+		STI
+		PUSH	ES
+		PUSH	DS
+		PUSHAD
+		MOV		EAX,ESP
+		PUSH	EAX
+		MOV		AX,SS
+		MOV		DS,AX
+		MOV		ES,AX
+		CALL	_inthandler0e
+		CMP		EAX,0
+		JNE		_asm_end_app
+		POP		EAX
+		POPAD
+		POP		DS
+		POP		ES
+		ADD		ESP,4			; INT 0x0e ?ｿｽﾅは、?ｿｽ?ｿｽ?ｿｽ黷ｪ?ｿｽK?ｿｽv
 		IRETD
 
 _memtest_sub:	; unsigned int memtest_sub(unsigned int start, unsigned int end)
