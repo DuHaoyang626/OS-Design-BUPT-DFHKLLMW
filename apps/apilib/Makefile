@@ -5,6 +5,8 @@ OBJS_API =	api001.obj api002.obj api003.obj api004.obj api005.obj api006.obj \
 			api025.obj api026.obj api027.obj api028.obj api029.obj api030.obj \
 			api031.obj api032.obj api033.obj api034.obj api035.obj api036.obj \
 			api037.obj api038.obj api039.obj api040.obj api041.obj api042.obj alloca.obj\
+			api060.obj api061.obj api062.obj api063.obj api064.obj api065.obj \
+			api066.obj api067.obj api068.obj  \
 			tomo1001.obj tomo1003.obj \
 			osak4002.obj osak4003.obj \
 

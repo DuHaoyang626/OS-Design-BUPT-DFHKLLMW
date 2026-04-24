@@ -228,6 +228,18 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		cmd_cls(cons);
 	} else if (strcmp(cmdline, "exit") == 0) {
 		cmd_exit(cons, fat);
+	}
+	else if (strcmp(cmdline, "task") == 0)
+	{
+		cmd_taskmon(cons, memtotal);
+	}
+	else if (strcmp(cmdline, "syncdemo") == 0)
+	{
+		/*
+		 * syncdemo: æ‰“å¼€â€œç«äº‰æ¡ä»?/ä¿¡å·é‡?/è¯»å†™è€…â€ç»¼åˆç›‘è§†çª—å?
+		 * è¯´æ˜ï¼šé?–æ?¡æ‰§è¡Œä¼šè§¦å‘å†…æ ¸æ¼”ç¤ºä»»åŠ¡é›†åˆå§‹åŒ–ï¼Œåç»?æ‰§è?Œåªæ–°å?ç›‘è§†çª—å?
+		 */
+		cmd_syncdemo(cons, memtotal);
 	} else if (strncmp(cmdline, "start", 6) == 0) {
 		cmd_start(cons, cmdline, memtotal);
 	} else if (strncmp(cmdline, "ncst", 5) == 0) {
@@ -264,6 +276,32 @@ void cmd_help(struct CONSOLE *cons)
 	cons_putstr0(cons, "type            ÃüÁîĞĞ²é¿´\n");
 	cons_putstr0(cons, "calc            ÃüÁîĞĞ¼ÆËãÆ÷\n");
 	cons_putstr0(cons, "Çë¼üÈëTview help.txt -w70 -h30\n»ñÈ¡¸ü¶àµÄ°ïÖú\n\n");
+	return;
+}
+
+void cmd_taskmon(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	if (open_taskmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½ï¿½È²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n");
+	}
+	cons_newline(cons);
+	return;
+}
+
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	/*
+	 * é€šè¿‡bootpackä¾§çª—å£å·¥å‚å‡½æ•°æ‰“å¼€ç›‘è?†çª—å£ã€?
+	 * open_syncmonè¿”å›0è¡¨ç¤ºèµ„æºä¸è¶³æˆ–åˆå§‹åŒ–å¤±è´¥ã€?
+	 */
+	if (open_syncmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "\nsyncdemoçª—å£æ‰“å¼€å¤±è´¥\n");
+	}
+	cons_newline(cons);
 	return;
 }
 
@@ -754,6 +792,33 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 38:
 			reg[7] = MMU_MODE;
+			break;
+		case 60:
+			open_syncmon(shtctl, 0);
+			break;
+		case 61: // get user shared var
+			reg[7] = g_user_shared_var;
+			break;
+		case 62: // set user shared var
+			g_user_shared_var = eax;
+			break;
+		case 63: // user sem wait
+			user_sem_wait();
+			break;
+		case 64: // user sem post
+			user_sem_post();
+			break;
+		case 65: // user sequence reset
+			user_sync_init();
+			break;
+		case 66: // user pc init
+			user_pc_init();
+			break;
+		case 67: // user pc produce
+			user_pc_produce(eax);
+			break;
+		case 68: // user pc consume
+			reg[7] = user_pc_consume();
 			break;
 	}
 	return 0;
