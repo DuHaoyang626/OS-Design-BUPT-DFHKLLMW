@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // HELO OS BY:STON 2020
 // COPYRIGHT (C) 2019-2020 STON
-// ºÎÀÖÔ´ÂëÆìÏÂ
+// ºÎÀÖÔ´Â?Æ?ÏÂ
 // STON/PENGZZEKAI/HELO
 // 
 // =================================
@@ -156,6 +156,11 @@ struct TASK *task_alloc(void)
 			task->tss.gs = 0;
 			task->tss.iomap = 0x40000000;
 			task->tss.ss0 = 0;
+#if MMU_MODE == MMU_MODE_SEG_PAGE
+			task->tss.cr3 = kernel_cr3;
+#else
+			task->tss.cr3 = 0;
+#endif
 			return task;
 		}
 	}

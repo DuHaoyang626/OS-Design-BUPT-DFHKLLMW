@@ -748,6 +748,9 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		case 37:
 			reg[7] = memman_get_algo_id();
 			break;
+		case 38:
+			reg[7] = MMU_MODE;
+			break;
 	}
 	return 0;
 }
@@ -771,6 +774,40 @@ int *inthandler0d(int *esp)
 	cons_putstr0(cons, "一般保护例外，应用已停止运行，应用触发保护程序。\nINT 0D :\n General Protected Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
+	return &(task->tss.esp0);
+}
+
+int *inthandler0e(int *esp)
+{
+	struct TASK *task;
+	struct CONSOLE *cons;
+	char s[40];
+	unsigned int error_code = (unsigned int) esp[0];
+	unsigned int fault_addr = (unsigned int) load_cr2();
+
+	if (taskctl == 0) {
+		for (;;) {
+			io_hlt();
+		}
+	}
+	task = task_now();
+	if (task == 0) {
+		for (;;) {
+			io_hlt();
+		}
+	}
+
+	cons = task->cons;
+	if (cons != 0) {
+		cons_putstr0(cons, "INT 0E :\n Page Fault Exception.\n");
+		sprintf(s, "CR2 = %08X\n", fault_addr);
+		cons_putstr0(cons, s);
+		sprintf(s, "ERR = %08X\n", error_code);
+		cons_putstr0(cons, s);
+		sprintf(s, "EIP = %08X\n", esp[11]);
+		cons_putstr0(cons, s);
+	}
+
 	return &(task->tss.esp0);
 }
 
