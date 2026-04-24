@@ -1,7 +1,7 @@
-[FORMAT "WCOFF"]				; ï¿½Iï¿½uï¿½Wï¿½Fï¿½Nï¿½gï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½éƒ‚ï¿½[ï¿½h	
-[INSTRSET "i486p"]				; 486ï¿½Ì–ï¿½ï¿½ß‚Ü‚ÅŽgï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Lï¿½q
-[BITS 32]						; 32ï¿½rï¿½bï¿½gï¿½ï¿½ï¿½[ï¿½hï¿½pï¿½Ì‹@ï¿½Bï¿½ï¿½ï¿½ï¿½ï¿½ç‚¹ï¿½ï¿½
-[FILE "naskfunc.nas"]			; ï¿½\ï¿½[ï¿½Xï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+[FORMAT "WCOFF"]				; ƒIƒuƒWƒFƒNƒgƒtƒ@ƒCƒ‹‚ðì‚éƒ‚[ƒh	
+[INSTRSET "i486p"]				; 486‚Ì–½—ß‚Ü‚ÅŽg‚¢‚½‚¢‚Æ‚¢‚¤‹Lq
+[BITS 32]						; 32ƒrƒbƒgƒ‚[ƒh—p‚Ì‹@ŠBŒê‚ðì‚ç‚¹‚é
+[FILE "naskfunc.nas"]			; ƒ\[ƒXƒtƒ@ƒCƒ‹–¼î•ñ
 
 		GLOBAL	_io_hlt, _io_cli, _io_sti, _io_stihlt
 		GLOBAL	_io_in8,  _io_in16,  _io_in32
@@ -77,14 +77,14 @@ _io_out32:	; void io_out32(int port, int data);
 		RET
 
 _io_load_eflags:	; int io_load_eflags(void);
-		PUSHFD		; PUSH EFLAGS ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ó–ï¿½
+		PUSHFD		; PUSH EFLAGS ‚Æ‚¢‚¤ˆÓ–¡
 		POP		EAX
 		RET
 
 _io_store_eflags:	; void io_store_eflags(int eflags);
 		MOV		EAX,[ESP+4]
 		PUSH	EAX
-		POPFD		; POP EFLAGS ï¿½Æ‚ï¿½ï¿½ï¿½ï¿½Ó–ï¿½
+		POPFD		; POP EFLAGS ‚Æ‚¢‚¤ˆÓ–¡
 		RET
 
 _load_gdtr:		; void load_gdtr(int limit, int addr);
@@ -186,7 +186,7 @@ _asm_inthandler0c:
 		POPAD
 		POP		DS
 		POP		ES
-		ADD		ESP,4			; INT 0x0c ï¿½Å‚ï¿½ï¿½Aï¿½ï¿½ï¿½ê‚ªï¿½Kï¿½v
+		ADD		ESP,4			; INT 0x0c ‚Å‚àA‚±‚ê‚ª•K—v
 		IRETD
 
 _asm_inthandler0d:
@@ -200,13 +200,13 @@ _asm_inthandler0d:
 		MOV		DS,AX
 		MOV		ES,AX
 		CALL	_inthandler0d
-		CMP		EAX,0			; ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á‚¤
-		JNE		_asm_end_app	; ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á‚¤
+		CMP		EAX,0			; ‚±‚±‚¾‚¯ˆá‚¤
+		JNE		_asm_end_app	; ‚±‚±‚¾‚¯ˆá‚¤
 		POP		EAX
 		POPAD
 		POP		DS
 		POP		ES
-		ADD		ESP,4			; INT 0x0d ï¿½Å‚ÍAï¿½ï¿½ï¿½ê‚ªï¿½Kï¿½v
+		ADD		ESP,4			; INT 0x0d ‚Å‚ÍA‚±‚ê‚ª•K—v
 		IRETD
 
 _asm_inthandler0e:
@@ -226,11 +226,11 @@ _asm_inthandler0e:
 		POPAD
 		POP		DS
 		POP		ES
-		ADD		ESP,4			; INT 0x0e ï¿½Å‚ÍAï¿½ï¿½ï¿½ê‚ªï¿½Kï¿½v
+		ADD		ESP,4			; INT 0x0e ?¿½Å‚ÍA?¿½?¿½?¿½ê‚ª?¿½K?¿½v
 		IRETD
 
 _memtest_sub:	; unsigned int memtest_sub(unsigned int start, unsigned int end)
-		PUSH	EDI						; ï¿½iEBX, ESI, EDI ï¿½ï¿½ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì‚Åj
+		PUSH	EDI						; iEBX, ESI, EDI ‚àŽg‚¢‚½‚¢‚Ì‚Åj
 		PUSH	ESI
 		PUSH	EBX
 		MOV		ESI,0xaa55aa55			; pat0 = 0xaa55aa55;
@@ -274,13 +274,13 @@ _asm_hrb_api:
 		STI
 		PUSH	DS
 		PUSH	ES
-		PUSHAD		; ï¿½Û‘ï¿½ï¿½Ì‚ï¿½ï¿½ß‚ï¿½PUSH
-		PUSHAD		; hrb_apiï¿½É‚í‚½ï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½PUSH
+		PUSHAD		; •Û‘¶‚Ì‚½‚ß‚ÌPUSH
+		PUSHAD		; hrb_api‚É‚í‚½‚·‚½‚ß‚ÌPUSH
 		MOV		AX,SS
-		MOV		DS,AX		; OSï¿½pï¿½ÌƒZï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½DSï¿½ï¿½ESï¿½É‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		MOV		DS,AX		; OS—p‚ÌƒZƒOƒƒ“ƒg‚ðDS‚ÆES‚É‚à“ü‚ê‚é
 		MOV		ES,AX
 		CALL	_hrb_api
-		CMP		EAX,0		; EAXï¿½ï¿½0ï¿½Å‚È‚ï¿½ï¿½ï¿½ÎƒAï¿½vï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+		CMP		EAX,0		; EAX‚ª0‚Å‚È‚¯‚ê‚ÎƒAƒvƒŠI—¹ˆ—
 		JNE		_asm_end_app
 		ADD		ESP,32
 		POPAD
@@ -288,34 +288,34 @@ _asm_hrb_api:
 		POP		DS
 		IRETD
 _asm_end_app:
-;	EAXï¿½ï¿½tss.esp0ï¿½Ì”Ô’n
+;	EAX‚Ítss.esp0‚Ì”Ô’n
 		MOV		ESP,[EAX]
 		MOV		DWORD [EAX+4],0
 		POPAD
-		RET					; cmd_appï¿½Ö‹Aï¿½ï¿½
+		RET					; cmd_app‚Ö‹A‚é
 
 _start_app:		; void start_app(int eip, int cs, int esp, int ds, int *tss_esp0);
-		PUSHAD		; 32ï¿½rï¿½bï¿½gï¿½ï¿½ï¿½Wï¿½Xï¿½^ï¿½ï¿½Sï¿½ï¿½ï¿½Û‘ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
-		MOV		EAX,[ESP+36]	; ï¿½Aï¿½vï¿½ï¿½ï¿½pï¿½ï¿½EIP
-		MOV		ECX,[ESP+40]	; ï¿½Aï¿½vï¿½ï¿½ï¿½pï¿½ï¿½CS
-		MOV		EDX,[ESP+44]	; ï¿½Aï¿½vï¿½ï¿½ï¿½pï¿½ï¿½ESP
-		MOV		EBX,[ESP+48]	; ï¿½Aï¿½vï¿½ï¿½ï¿½pï¿½ï¿½DS/SS
-		MOV		EBP,[ESP+52]	; tss.esp0ï¿½Ì”Ô’n
-		MOV		[EBP  ],ESP		; OSï¿½pï¿½ï¿½ESPï¿½ï¿½Û‘ï¿½
-		MOV		[EBP+4],SS		; OSï¿½pï¿½ï¿½SSï¿½ï¿½Û‘ï¿½
+		PUSHAD		; 32ƒrƒbƒgƒŒƒWƒXƒ^‚ð‘S•”•Û‘¶‚µ‚Ä‚¨‚­
+		MOV		EAX,[ESP+36]	; ƒAƒvƒŠ—p‚ÌEIP
+		MOV		ECX,[ESP+40]	; ƒAƒvƒŠ—p‚ÌCS
+		MOV		EDX,[ESP+44]	; ƒAƒvƒŠ—p‚ÌESP
+		MOV		EBX,[ESP+48]	; ƒAƒvƒŠ—p‚ÌDS/SS
+		MOV		EBP,[ESP+52]	; tss.esp0‚Ì”Ô’n
+		MOV		[EBP  ],ESP		; OS—p‚ÌESP‚ð•Û‘¶
+		MOV		[EBP+4],SS		; OS—p‚ÌSS‚ð•Û‘¶
 		MOV		ES,BX
 		MOV		DS,BX
 		MOV		FS,BX
 		MOV		GS,BX
-;	ï¿½È‰ï¿½ï¿½ï¿½RETFï¿½ÅƒAï¿½vï¿½ï¿½ï¿½Ésï¿½ï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚ÌƒXï¿½^ï¿½bï¿½Nï¿½ï¿½ï¿½ï¿½
-		OR		ECX,3			; ï¿½Aï¿½vï¿½ï¿½ï¿½pï¿½ÌƒZï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ôï¿½ï¿½ï¿½3ï¿½ï¿½ORï¿½ï¿½ï¿½ï¿½
-		OR		EBX,3			; ï¿½Aï¿½vï¿½ï¿½ï¿½pï¿½ÌƒZï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½gï¿½Ôï¿½ï¿½ï¿½3ï¿½ï¿½ORï¿½ï¿½ï¿½ï¿½
-		PUSH	EBX				; ï¿½Aï¿½vï¿½ï¿½ï¿½ï¿½SS
-		PUSH	EDX				; ï¿½Aï¿½vï¿½ï¿½ï¿½ï¿½ESP
-		PUSH	ECX				; ï¿½Aï¿½vï¿½ï¿½ï¿½ï¿½CS
-		PUSH	EAX				; ï¿½Aï¿½vï¿½ï¿½ï¿½ï¿½EIP
+;	ˆÈ‰º‚ÍRETF‚ÅƒAƒvƒŠ‚És‚©‚¹‚é‚½‚ß‚ÌƒXƒ^ƒbƒN’²®
+		OR		ECX,3			; ƒAƒvƒŠ—p‚ÌƒZƒOƒƒ“ƒg”Ô†‚É3‚ðOR‚·‚é
+		OR		EBX,3			; ƒAƒvƒŠ—p‚ÌƒZƒOƒƒ“ƒg”Ô†‚É3‚ðOR‚·‚é
+		PUSH	EBX				; ƒAƒvƒŠ‚ÌSS
+		PUSH	EDX				; ƒAƒvƒŠ‚ÌESP
+		PUSH	ECX				; ƒAƒvƒŠ‚ÌCS
+		PUSH	EAX				; ƒAƒvƒŠ‚ÌEIP
 		RETF
-;	ï¿½Aï¿½vï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚Í—ï¿½ï¿½È‚ï¿½
+;	ƒAƒvƒŠ‚ªI—¹‚µ‚Ä‚à‚±‚±‚É‚Í—ˆ‚È‚¢
 
 _shutdown:
 	JMP		start2
@@ -329,8 +329,8 @@ dw 0x0650,0x0000
 ALIGNB 16
 protect16_len EQU	$ - protect16
 
-;ï¿½ï¿½Ê“Iï¿½ï¿½??16ï¿½Ê•ï¿½?ï¿½ÍŽï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ÍŽï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½?
-;ï¿½ï¿½?ï¿½ÍŽï¿½ï¿½ï¿½??ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0x0630?ï¿½C?ï¿½ï¿½ï¿½Û—ï¿½0x20 B
+;ã–Ê“I‘ã??16ˆÊ•Û?–ÍŽ®’µ“ü?–ÍŽ®Œ÷”\‘ã?
+;•Û?–ÍŽ®‘ã??‘—“ž“à‘¶0x0630?C?›€•Û—¯0x20 B
 
 realmod:
 db 0x8c, 0xc8
@@ -352,8 +352,8 @@ db 0xb9, 0x03, 0x00
 db 0xcd, 0x15
 ALIGNB 16
 realmod_len	EQU		$ - realmod
-; ï¿½Èï¿½ï¿½?ï¿½i??ï¿½ÍŽï¿½ï¿½ï¿½?ï¿½uï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½ï¿½ÍŽï¿½ï¿½y?ï¿½ï¿½ï¿½ï¿½?
-; ?ï¿½ÍŽï¿½ï¿½ï¿½ï¿½\ï¿½ï¿½??ï¿½ï¿½ï¿½ï¿½0x0650?ï¿½B
+; ˆÈã‘ã?’i??–ÍŽ®‰º?’uŽš•„?Ž¦–ÍŽ®‹y?Š÷‘ã?
+; ?–ÍŽ®Œ÷”\‘ã??‘—“ž0x0650?B
 
 GDTIDT:
 dw 0x0000, 0x0000, 0x0000, 0x0000
@@ -366,8 +366,8 @@ dw 0x03ff
 dw 0x0000, 0x0000
 ALIGNB 16
 GDTIDT_lenth EQU	$ - GDTIDT
-;ï¿½Èï¿½?GDTï¿½yITDï¿½\?ï¿½ï¿½ï¿½ï¿½
-;ï¿½Èã”ï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½0x0600?ï¿½Cï¿½Û—ï¿½0x30 Bï¿½Iï¿½ï¿½?ï¿½B
+;ˆÈã?GDT‹yITD•\?”˜
+;ˆÈã”˜?‘—“ž0x0600?C•Û—¯0x30 B“I‹ó?B
 start2:
 	MOV		EBX, GDTIDT
 	MOV		EDX, 0x600
