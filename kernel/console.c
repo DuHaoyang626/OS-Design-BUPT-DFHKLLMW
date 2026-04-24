@@ -1,6 +1,6 @@
 /* --------------------------------
 	B Y : S T O N
-	HELO OS ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
+	HELO OS ºËÐÄÎÄ¼þ
 	    ver. 1.0
          DATE : 2019-1-19  
 ----------------------------------- */
@@ -44,7 +44,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 		task->langmode = 0;
 	}
 	task->langbyte1 = 0;
-	task->langmode = 3;//ï¿½ï¿½Ê¾Ã¿ï¿½Î¶ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½
+	task->langmode = 3;//±íÊ¾Ã¿´Î¶¼Ñ¡Ôñºº×Ö
 	cons_putchar(&cons, '#', 1);
 
 	for (;;) {
@@ -97,7 +97,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 					}
 					cons_putchar(&cons, '#', 1);
 				} else {
-					if (cons.cur_x < 512) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ð¡
+					if (cons.cur_x < 512) //Ö÷´°¿ÚxÖá´óÐ¡
 					{
 						cmdline[cons.cur_x / 8 - 2] = i - 256;
 						cons_putchar(&cons, i - 256, 1);
@@ -115,7 +115,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 }
 
 /* =======================================
-ï¿½ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½xï¿½ï¿½
+´°¿Ú´óÐ¡µ÷Õû£¬Ö÷ÒªÊÇxÖá
 ========================================== */
 void cons_putchar(struct CONSOLE *cons, int chr, char move)
 {
@@ -152,7 +152,7 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
 	return;
 }
 /* =======================================
-ï¿½ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½yï¿½ï¿½ï¿½Ð¡
+´°¿Ú´óÐ¡µ÷Õû£¬xÖáºÍyÖá´óÐ¡
 ========================================== */
 void cons_newline(struct CONSOLE *cons)
 {
@@ -230,7 +230,7 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		cmd_ncst(cons, cmdline, memtotal);
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
-			cons_putstr0(cons, "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼È²ï¿½ï¿½Çºï¿½ï¿½Ö²ï¿½ï¿½ï¿½ÏµÍ³ï¿½Ú²ï¿½Ö¸ï¿½î£¬Ò²ï¿½ï¿½ï¿½ï¿½ï¿½â²¿ï¿½ï¿½ï¿½ï¿½\n\n");
+			cons_putstr0(cons, "\nÄúÊäÈëÃüÁîµÄ¼È²»ÊÇºÎÀÖ²Ù×÷ÏµÍ³ÄÚ²¿Ö¸Áî£¬Ò²²»ÊÇÍâ²¿³ÌÐò¡£\n\n");
 		}
 	}
 	return;
@@ -241,25 +241,25 @@ void cmd_ver(struct CONSOLE *cons)
 	cons_putstr0(cons, "\n");
 	cons_putstr0(cons, "Helo_OS v4.1   <shell 5.2>  GUI 2.2\n");
 	cons_putstr0(cons, "Copyright (C) 2019 PengZekai\n");
-	cons_putstr0(cons, "[issue]     ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n\n");
+	cons_putstr0(cons, "[issue]     ·¢²¼°æ\n\n");
 	return;
 }
 
 void cmd_help(struct CONSOLE *cons)
 {
 	cons_putstr0(cons, "\n\n");
-	cons_putstr0(cons, "ï¿½ï¿½ï¿½ï¿½            ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "mem             ï¿½é¿´ï¿½Ú´ï¿½\n");
-	cons_putstr0(cons, "tview           ï¿½Ä¼ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "gview           Í¼Æ¬ï¿½é¿´ï¿½ï¿½\n");
-	cons_putstr0(cons, "cls             ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "dir             ï¿½Ä¼ï¿½Ä¿Â¼\n");
-	cons_putstr0(cons, "couture         ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "ls              ï¿½Ä¼ï¿½Ä¿Â¼\n");
-	cons_putstr0(cons, "music           ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "type            ï¿½ï¿½ï¿½ï¿½ï¿½Ð²é¿´\n");
-	cons_putstr0(cons, "calc            ï¿½ï¿½ï¿½ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "ï¿½ï¿½ï¿½ï¿½ï¿½Tview help.txt -w70 -h30\nï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ä°ï¿½ï¿½ï¿½\n\n");
+	cons_putstr0(cons, "ÃüÁî            ¹¦ÄÜ\n");
+	cons_putstr0(cons, "mem             ²é¿´ÄÚ´æ\n");
+	cons_putstr0(cons, "tview           ÎÄ¼þÔÄ¶ÁÆ÷\n");
+	cons_putstr0(cons, "gview           Í¼Æ¬²é¿´Æ÷\n");
+	cons_putstr0(cons, "cls             ÇåÆÁ\n");
+	cons_putstr0(cons, "dir             ÎÄ¼þÄ¿Â¼\n");
+	cons_putstr0(cons, "couture         Ãë±í\n");
+	cons_putstr0(cons, "ls              ÎÄ¼þÄ¿Â¼\n");
+	cons_putstr0(cons, "music           ÒôÀÖ²¥·ÅÆ÷\n");
+	cons_putstr0(cons, "type            ÃüÁîÐÐ²é¿´\n");
+	cons_putstr0(cons, "calc            ÃüÁîÐÐ¼ÆËãÆ÷\n");
+	cons_putstr0(cons, "Çë¼üÈëTview help.txt -w70 -h30\n»ñÈ¡¸ü¶àµÄ°ïÖú\n\n");
 	return;
 }
 
@@ -268,12 +268,12 @@ void cmd_mem(struct CONSOLE *cons, int memtotal)
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	char s[96];
 	long int notfree = memtotal / 1048576 - memman_total(memman) / 1048576;
-	sprintf(s, "\nï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  %dMB\nï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ£º  %dMB\nï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ£º  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
+	sprintf(s, "\nÄÚ´æ×ÜÁ¿£º  %dMB\n¿ÉÓÃÄÚ´æ£º  %dMB\nÒÑÓÃÄÚ´æ£º  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
 	cons_putstr0(cons, s);
 	return;
 }
 
-//ï¿½Ä´ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½clsï¿½ï¿½ï¿½ï¿½Ò²Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//¸Ä´°¿Ú´óÐ¡ºóclsÃüÁîÒ²Òªµ÷Õû²ÎÊý
 void cmd_cls(struct CONSOLE *cons)
 {
 	int x, y;
@@ -287,7 +287,7 @@ void cmd_cls(struct CONSOLE *cons)
 	cons->cur_y = 28;
 	return;
 }
-//dirï¿½ï¿½ï¿½ï¿½
+//dirÃüÁî
 void cmd_dir(struct CONSOLE *cons)
 {
 	struct TASK *task = task_now();
@@ -296,7 +296,7 @@ void cmd_dir(struct CONSOLE *cons)
 	char s[60];
 	for (i = 0; i < 224; i++) {
 		if (k > 400) {
-			cons_putstr0(cons, "\nï¿½Ä¼ï¿½ï¿½ï¿½ï¿½à£¬ï¿½ë°´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
+			cons_putstr0(cons, "\nÎÄ¼þ¹ý¶à£¬Çë°´ÈÎÒâ¼ü¼ÌÐø¡£¡£¡£");
 			do 
 			{
 				l = fifo32_get(&task->fifo);
@@ -310,7 +310,7 @@ void cmd_dir(struct CONSOLE *cons)
 		if (finfo[i].name[0] != 0xe5) {
 			if ((finfo[i].type & 0x18) == 0) {
 				k += 16;
-				sprintf(s, "                extï¿½Ä¼ï¿½       %7dï¿½Ö½ï¿½\n", finfo[i].size);
+				sprintf(s, "                extÎÄ¼þ       %7d×Ö½Ú\n", finfo[i].size);
 				for (j = 0; j < 8; j++) {
 					s[j] = finfo[i].name[j];
 					if (s[j] == 0)
@@ -385,7 +385,7 @@ void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal)
 	return;
 }
 
-//ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã³ï¿½ï¿½ï¿½
+//ÉèÖÃÓ¦ÓÃ³ÌÐò
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
@@ -418,7 +418,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 		appsiz = finfo->size;
 		p = file_loadfile2(finfo->clustno, &appsiz, fat);
 		// -----------------------------------------------
-		if (appsiz >= 36 && strncmp(p + 4, "Heloï¿½ï¿½", 4) == 0 && *p == 0x00) 
+		if (appsiz >= 36 && strncmp(p + 4, "Helo£¡", 4) == 0 && *p == 0x00) 
 		// -----------------------------------------------
 		{
 			segsiz = *((int *) (p + 0x0000));
@@ -450,7 +450,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 			memman_free_4k(memman, (int) q, segsiz);
 			task->langbyte1 = 0;
 		} else {
-			cons_putstr0(cons, "Helo OS Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ò¿ª´ï¿½ï¿½ó£¬»ï¿½ï¿½ß²ï¿½ï¿½Ç±ï¿½×¼ï¿½ï¿½Helo osï¿½ï¿½Ö´ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½\nï¿½ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½Ú±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ !\n.HEL application program Opening Error.\n");
+			cons_putstr0(cons, "Helo OS Ó¦ÓÃ³ÌÐòÎÄ¼þ´ò¿ª´íÎó£¬»òÕß²»ÊÇ±ê×¼µÄHelo os¿ÉÖ´ÐÐÎÄ¼þ£¡\nËùÒÔÎÞ·¨ÔÚ±¾¼ÆËã»úÉÏÔËÐÐ !\n.HEL application program Opening Error.\n");
 		}
 		memman_free_4k(memman, (int) p, appsiz);
 		cons_newline(cons);
@@ -513,7 +513,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			sheet_setbuf(sht, (char *) ebx + ds_base, esi, edi, eax);
 			make_window8((char *) ebx + ds_base, esi, edi, (char *) ecx + ds_base, 0);
 			sheet_slide(sht, ((shtctl->xsize - esi) / 2) & ~3, (shtctl->ysize - edi) / 2);
-			sheet_updown(sht, shtctl->top); /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ß¶ï¿½Ö¸ï¿½ï¿½Îªï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ä¸ß¶È£ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Ï²ï¿½*/
+			sheet_updown(sht, shtctl->top); /*½«´°¿ÚÍ¼²ã¸ß¶ÈÖ¸¶¨Îªµ±Ç°Êó±êËùÔÚÍ¼²ãµÄ¸ß¶È£¬Êó±êÒÆµ½ÉÏ²ã*/
 			reg[7] = (int) sht;
 			break;
 		case 6:
@@ -532,15 +532,15 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 8:
 			memman_init((struct MEMMAN *) (ebx + ds_base));
-			ecx &= 0xfffffff0; /*ï¿½ï¿½16ï¿½Ö½ï¿½Îªï¿½ï¿½Î»*/
+			ecx &= 0xfffffff0; /*ÒÔ16×Ö½ÚÎªµ¥Î»*/
 			memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 			break;
 		case 9:
-			ecx = (ecx + 0x0f) & 0xfffffff0; /*ï¿½ï¿½16ï¿½Ö½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½Î»È¡ï¿½ï¿½*/
+			ecx = (ecx + 0x0f) & 0xfffffff0; /*ÒÔ16×Ö½ÚÎªµ¥Î»½øÎ»È¡Õû*/
 			reg[7] = memman_alloc((struct MEMMAN *) (ebx + ds_base), ecx);
 			break;
 		case 10:
-			ecx = (ecx + 0x0f) & 0xfffffff0; /*ï¿½ï¿½16ï¿½Ö½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½Î»È¡ï¿½ï¿½*/
+			ecx = (ecx + 0x0f) & 0xfffffff0; /*ÒÔ16×Ö½ÚÎªµ¥Î»½øÎ»È¡Õû*/
 			memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 			break;
 		case 11:
@@ -579,7 +579,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				io_cli();
 				if (fifo32_status(&task->fifo) == 0) {
 					if (eax != 0) {
-						task_sleep(task); /* FIFOÎªï¿½Õ£ï¿½ï¿½ï¿½ï¿½ß²ï¿½ï¿½È´ï¿½*/
+						task_sleep(task); /* FIFOÎª¿Õ£¬ÐÝÃß²¢µÈ´ý*/
 					} else {
 						io_sti();
 						reg[7] = -1;
@@ -588,25 +588,25 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				}
 				i = fifo32_get(&task->fifo);
 				io_sti();
-				if (i <= 1) { /*ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½Ê±ï¿½ï¿½*/
-					/*Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ê¾ï¿½ï¿½ê£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç½ï¿½ï¿½Â´ï¿½ï¿½ï¿½Ê¾ï¿½Ãµï¿½Öµï¿½ï¿½Îª1*/
-					timer_init(cons->timer, &task->fifo, 1); /*ï¿½Â´ï¿½ï¿½ï¿½Îª1*/
+				if (i <= 1) { /*¹â±êÓÃ¶¨Ê±Æ÷*/
+					/*Ó¦ÓÃ³ÌÐòÔËÐÐÊ±²»ÐèÒªÏÔÊ¾¹â±ê£¬Òò´Ë×ÜÊÇ½«ÏÂ´ÎÏÔÊ¾ÓÃµÄÖµÖÃÎª1*/
+					timer_init(cons->timer, &task->fifo, 1); /*ÏÂ´ÎÖÃÎª1*/
 					timer_settime(cons->timer, 50);
 				}
-				if (i == 2) { /*ï¿½ï¿½ï¿½ON */
+				if (i == 2) { /*¹â±êON */
 					cons->cur_c = COL8_FFFFFF;
 				}
-				if (i == 3) { /*ï¿½ï¿½ï¿½OFF */
+				if (i == 3) { /*¹â±êOFF */
 					cons->cur_c = -1;
 				}
-				if (i == 4) { /*Ö»ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½*/
+				if (i == 4) { /*Ö»¹Ø±ÕÃüÁîÐÐ´°¿Ú*/
 					timer_cancel(cons->timer);
 					io_cli();
-					fifo32_put(sys_fifo, cons->sht - shtctl->sheets0 + 2024); /*2024ï¿½ï¿½2279*/
+					fifo32_put(sys_fifo, cons->sht - shtctl->sheets0 + 2024); /*2024¡«2279*/
 					cons->sht = 0;
 					io_sti();
 				}
-				if (i >= 256) { /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½*/
+				if (i >= 256) { /*¼üÅÌÊý¾Ý£¨Í¨¹ýÈÎÎñA£©µÈ*/
 					reg[7] = i - 256;
 					return 0;
 				}
@@ -614,7 +614,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 16:
 			reg[7] = (int) timer_alloc();
-			((struct TIMER *) reg[7])->flags2 = 1; /*ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½È¡ï¿½ï¿½*/
+			((struct TIMER *) reg[7])->flags2 = 1; /*ÔÊÐí×Ô¶¯È¡Ïû*/
 			break;
 		case 17:
 			timer_init((struct TIMER *) ebx, &task->fifo, eax + 256);
@@ -760,7 +760,7 @@ int *inthandler0c(int *esp)
 	struct TASK *task = task_now();
 	struct CONSOLE *cons = task->cons;
 	char s[40];
-	cons_putstr0(cons, "ï¿½ï¿½Õ»ï¿½ì³£ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð´ï¿½ï¿½ó£¡£ï¿½\nINT 0C :\n Stack Exception.\n");
+	cons_putstr0(cons, "¶ÑÕ»Òì³££¬Ó¦ÓÃÈí¼þ³ÌÐòÖ´ÐÐ´íÎó£¡£¡\nINT 0C :\n Stack Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
 	return &(task->tss.esp0);
@@ -771,7 +771,7 @@ int *inthandler0d(int *esp)
 	struct TASK *task = task_now();
 	struct CONSOLE *cons = task->cons;
 	char s[40];
-	cons_putstr0(cons, "Ò»ï¿½ã±£ï¿½ï¿½ï¿½ï¿½ï¿½â£¬Ó¦ï¿½ï¿½ï¿½ï¿½Í£Ö¹ï¿½ï¿½ï¿½Ð£ï¿½Ó¦ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\nINT 0D :\n General Protected Exception.\n");
+	cons_putstr0(cons, "Ò»°ã±£»¤ÀýÍâ£¬Ó¦ÓÃÒÑÍ£Ö¹ÔËÐÐ£¬Ó¦ÓÃ´¥·¢±£»¤³ÌÐò¡£\nINT 0D :\n General Protected Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
 	return &(task->tss.esp0);

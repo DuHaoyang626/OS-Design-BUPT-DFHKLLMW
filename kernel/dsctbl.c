@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // HELO OS BY:STON 2020
 // COPYRIGHT (C) 2019-2020 STON
-// 锟斤拷锟斤拷源锟斤拷锟斤拷锟斤拷
+// 何乐源码旗下
 // STON/PENGZZEKAI/HELO
 // 
 // =================================
@@ -28,7 +28,7 @@ void init_gdtidt(void)
 	struct GATE_DESCRIPTOR    *idt = (struct GATE_DESCRIPTOR    *) ADR_IDT;
 	int i;
 
-	/* GDT锟教忥拷锟斤拷锟斤拷 */
+	/* GDT偺弶婜壔 */
 	for (i = 0; i <= LIMIT_GDT / 8; i++) {
 		set_segmdesc(gdt + i, 0, 0, 0);
 	}
@@ -36,13 +36,13 @@ void init_gdtidt(void)
 	set_segmdesc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
 	load_gdtr(LIMIT_GDT, ADR_GDT);
 
-	/* IDT锟教忥拷锟斤拷锟斤拷 */
+	/* IDT偺弶婜壔 */
 	for (i = 0; i <= LIMIT_IDT / 8; i++) {
 		set_gatedesc(idt + i, 0, 0, 0);
 	}
 	load_idtr(LIMIT_IDT, ADR_IDT);
 
-	/* IDT锟教愝掞拷 */
+	/* IDT偺愝掕 */
 	set_gatedesc(idt + 0x0c, (int) asm_inthandler0c, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt + 0x0d, (int) asm_inthandler0d, 2 * 8, AR_INTGATE32);
 	set_gatedesc(idt + 0x0e, (int) asm_inthandler0e, 2 * 8, AR_INTGATE32);
