@@ -1,6 +1,6 @@
 /* --------------------------------
 	B Y : S T O N
-	HELO OS ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
+	HELO OS ºËÐÄÎÄ¼þ
 	    ver. 1.0
          DATE : 2019-1-19  
 ----------------------------------- */
@@ -44,7 +44,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 		task->langmode = 0;
 	}
 	task->langbyte1 = 0;
-	task->langmode = 3;//ï¿½ï¿½Ê¾Ã¿ï¿½Î¶ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½
+	task->langmode = 3;//±íÊ¾Ã¿´Î¶¼Ñ¡Ôñºº×Ö
 	cons_putchar(&cons, '#', 1);
 
 	for (;;) {
@@ -97,7 +97,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 					}
 					cons_putchar(&cons, '#', 1);
 				} else {
-					if (cons.cur_x < 512) //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½Ð¡
+					if (cons.cur_x < 512) //Ö÷´°¿ÚxÖá´óÐ¡
 					{
 						cmdline[cons.cur_x / 8 - 2] = i - 256;
 						cons_putchar(&cons, i - 256, 1);
@@ -115,7 +115,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 }
 
 /* =======================================
-ï¿½ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½xï¿½ï¿½
+´°¿Ú´óÐ¡µ÷Õû£¬Ö÷ÒªÊÇxÖá
 ========================================== */
 void cons_putchar(struct CONSOLE *cons, int chr, char move)
 {
@@ -152,7 +152,7 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
 	return;
 }
 /* =======================================
-ï¿½ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½xï¿½ï¿½ï¿½yï¿½ï¿½ï¿½Ð¡
+´°¿Ú´óÐ¡µ÷Õû£¬xÖáºÍyÖá´óÐ¡
 ========================================== */
 void cons_newline(struct CONSOLE *cons)
 {
@@ -228,13 +228,25 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		cmd_cls(cons);
 	} else if (strcmp(cmdline, "exit") == 0) {
 		cmd_exit(cons, fat);
+	}
+	else if (strcmp(cmdline, "task") == 0)
+	{
+		cmd_taskmon(cons, memtotal);
+	}
+	else if (strcmp(cmdline, "syncdemo") == 0)
+	{
+		/*
+		 * syncdemo: æ‰“å¼€â€œç«žäº‰æ¡ä»?/ä¿¡å·é‡?/è¯»å†™è€…â€ç»¼åˆç›‘è§†çª—å?
+		 * è¯´æ˜Žï¼šé?–æ?¡æ‰§è¡Œä¼šè§¦å‘å†…æ ¸æ¼”ç¤ºä»»åŠ¡é›†åˆå§‹åŒ–ï¼ŒåŽç»?æ‰§è?Œåªæ–°å?žç›‘è§†çª—å?
+		 */
+		cmd_syncdemo(cons, memtotal);
 	} else if (strncmp(cmdline, "start", 6) == 0) {
 		cmd_start(cons, cmdline, memtotal);
 	} else if (strncmp(cmdline, "ncst", 5) == 0) {
 		cmd_ncst(cons, cmdline, memtotal);
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
-			cons_putstr0(cons, "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼È²ï¿½ï¿½Çºï¿½ï¿½Ö²ï¿½ï¿½ï¿½ÏµÍ³ï¿½Ú²ï¿½Ö¸ï¿½î£¬Ò²ï¿½ï¿½ï¿½ï¿½ï¿½â²¿ï¿½ï¿½ï¿½ï¿½\n\n");
+			cons_putstr0(cons, "\nÄúÊäÈëÃüÁîµÄ¼È²»ÊÇºÎÀÖ²Ù×÷ÏµÍ³ÄÚ²¿Ö¸Áî£¬Ò²²»ÊÇÍâ²¿³ÌÐò¡£\n\n");
 		}
 	}
 	return;
@@ -245,25 +257,51 @@ void cmd_ver(struct CONSOLE *cons)
 	cons_putstr0(cons, "\n");
 	cons_putstr0(cons, "Helo_OS v4.1   <shell 5.2>  GUI 2.2\n");
 	cons_putstr0(cons, "Copyright (C) 2019 PengZekai\n");
-	cons_putstr0(cons, "[issue]     ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n\n");
+	cons_putstr0(cons, "[issue]     ·¢²¼°æ\n\n");
 	return;
 }
 
 void cmd_help(struct CONSOLE *cons)
 {
 	cons_putstr0(cons, "\n\n");
-	cons_putstr0(cons, "ï¿½ï¿½ï¿½ï¿½            ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "mem             ï¿½é¿´ï¿½Ú´ï¿½\n");
-	cons_putstr0(cons, "tview           ï¿½Ä¼ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "gview           Í¼Æ¬ï¿½é¿´ï¿½ï¿½\n");
-	cons_putstr0(cons, "cls             ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "dir             ï¿½Ä¼ï¿½Ä¿Â¼\n");
-	cons_putstr0(cons, "couture         ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "ls              ï¿½Ä¼ï¿½Ä¿Â¼\n");
-	cons_putstr0(cons, "music           ï¿½ï¿½ï¿½Ö²ï¿½ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "type            ï¿½ï¿½ï¿½ï¿½ï¿½Ð²é¿´\n");
-	cons_putstr0(cons, "calc            ï¿½ï¿½ï¿½ï¿½ï¿½Ð¼ï¿½ï¿½ï¿½ï¿½ï¿½\n");
-	cons_putstr0(cons, "ï¿½ï¿½ï¿½ï¿½ï¿½Tview help.txt -w70 -h30\nï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½Ä°ï¿½ï¿½ï¿½\n\n");
+	cons_putstr0(cons, "ÃüÁî            ¹¦ÄÜ\n");
+	cons_putstr0(cons, "mem             ²é¿´ÄÚ´æ\n");
+	cons_putstr0(cons, "tview           ÎÄ¼þÔÄ¶ÁÆ÷\n");
+	cons_putstr0(cons, "gview           Í¼Æ¬²é¿´Æ÷\n");
+	cons_putstr0(cons, "cls             ÇåÆÁ\n");
+	cons_putstr0(cons, "dir             ÎÄ¼þÄ¿Â¼\n");
+	cons_putstr0(cons, "couture         Ãë±í\n");
+	cons_putstr0(cons, "ls              ÎÄ¼þÄ¿Â¼\n");
+	cons_putstr0(cons, "music           ÒôÀÖ²¥·ÅÆ÷\n");
+	cons_putstr0(cons, "type            ÃüÁîÐÐ²é¿´\n");
+	cons_putstr0(cons, "calc            ÃüÁîÐÐ¼ÆËãÆ÷\n");
+	cons_putstr0(cons, "Çë¼üÈëTview help.txt -w70 -h30\n»ñÈ¡¸ü¶àµÄ°ïÖú\n\n");
+	return;
+}
+
+void cmd_taskmon(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	if (open_taskmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "\nï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ìµï¿½ï¿½È²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n");
+	}
+	cons_newline(cons);
+	return;
+}
+
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	/*
+	 * é€šè¿‡bootpackä¾§çª—å£å·¥åŽ‚å‡½æ•°æ‰“å¼€ç›‘è?†çª—å£ã€?
+	 * open_syncmonè¿”å›ž0è¡¨ç¤ºèµ„æºä¸è¶³æˆ–åˆå§‹åŒ–å¤±è´¥ã€?
+	 */
+	if (open_syncmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "\nsyncdemoçª—å£æ‰“å¼€å¤±è´¥\n");
+	}
+	cons_newline(cons);
 	return;
 }
 
@@ -272,12 +310,12 @@ void cmd_mem(struct CONSOLE *cons, int memtotal)
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	char s[96];
 	long int notfree = memtotal / 1048576 - memman_total(memman) / 1048576;
-	sprintf(s, "\nï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½  %dMB\nï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ£º  %dMB\nï¿½ï¿½ï¿½ï¿½ï¿½Ú´æ£º  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
+	sprintf(s, "\nÄÚ´æ×ÜÁ¿£º  %dMB\n¿ÉÓÃÄÚ´æ£º  %dMB\nÒÑÓÃÄÚ´æ£º  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
 	cons_putstr0(cons, s);
 	return;
 }
 
-//ï¿½Ä´ï¿½ï¿½Ú´ï¿½Ð¡ï¿½ï¿½clsï¿½ï¿½ï¿½ï¿½Ò²Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//¸Ä´°¿Ú´óÐ¡ºóclsÃüÁîÒ²Òªµ÷Õû²ÎÊý
 void cmd_cls(struct CONSOLE *cons)
 {
 	int x, y;
@@ -291,7 +329,7 @@ void cmd_cls(struct CONSOLE *cons)
 	cons->cur_y = 28;
 	return;
 }
-//dirï¿½ï¿½ï¿½ï¿½
+//dirÃüÁî
 void cmd_dir(struct CONSOLE *cons)
 {
 	struct TASK *task = task_now();
@@ -300,7 +338,7 @@ void cmd_dir(struct CONSOLE *cons)
 	char s[60];
 	for (i = 0; i < 224; i++) {
 		if (k > 400) {
-			cons_putstr0(cons, "\nï¿½Ä¼ï¿½ï¿½ï¿½ï¿½à£¬ï¿½ë°´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½");
+			cons_putstr0(cons, "\nÎÄ¼þ¹ý¶à£¬Çë°´ÈÎÒâ¼ü¼ÌÐø¡£¡£¡£");
 			do 
 			{
 				l = fifo32_get(&task->fifo);
@@ -314,7 +352,7 @@ void cmd_dir(struct CONSOLE *cons)
 		if (finfo[i].name[0] != 0xe5) {
 			if ((finfo[i].type & 0x18) == 0) {
 				k += 16;
-				sprintf(s, "                extï¿½Ä¼ï¿½       %7dï¿½Ö½ï¿½\n", finfo[i].size);
+				sprintf(s, "                extÎÄ¼þ       %7d×Ö½Ú\n", finfo[i].size);
 				for (j = 0; j < 8; j++) {
 					s[j] = finfo[i].name[j];
 					if (s[j] == 0)
@@ -389,7 +427,7 @@ void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal)
 	return;
 }
 
-//ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ã³ï¿½ï¿½ï¿½
+//ÉèÖÃÓ¦ÓÃ³ÌÐò
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
@@ -422,7 +460,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 		appsiz = finfo->size;
 		p = file_loadfile2(finfo->clustno, &appsiz, fat);
 		// -----------------------------------------------
-		if (appsiz >= 36 && strncmp(p + 4, "Heloï¿½ï¿½", 4) == 0 && *p == 0x00) 
+		if (appsiz >= 36 && strncmp(p + 4, "Helo£¡", 4) == 0 && *p == 0x00) 
 		// -----------------------------------------------
 		{
 			segsiz = *((int *) (p + 0x0000));
@@ -454,7 +492,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 			memman_free_4k(memman, (int) q, segsiz);
 			task->langbyte1 = 0;
 		} else {
-			cons_putstr0(cons, "Helo OS Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ò¿ª´ï¿½ï¿½ó£¬»ï¿½ï¿½ß²ï¿½ï¿½Ç±ï¿½×¼ï¿½ï¿½Helo osï¿½ï¿½Ö´ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½\nï¿½ï¿½ï¿½ï¿½ï¿½Þ·ï¿½ï¿½Ú±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ !\n.HEL application program Opening Error.\n");
+			cons_putstr0(cons, "Helo OS Ó¦ÓÃ³ÌÐòÎÄ¼þ´ò¿ª´íÎó£¬»òÕß²»ÊÇ±ê×¼µÄHelo os¿ÉÖ´ÐÐÎÄ¼þ£¡\nËùÒÔÎÞ·¨ÔÚ±¾¼ÆËã»úÉÏÔËÐÐ !\n.HEL application program Opening Error.\n");
 		}
 		memman_free_4k(memman, (int) p, appsiz);
 		cons_newline(cons);
@@ -517,7 +555,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			sheet_setbuf(sht, (char *) ebx + ds_base, esi, edi, eax);
 			make_window8((char *) ebx + ds_base, esi, edi, (char *) ecx + ds_base, 0);
 			sheet_slide(sht, ((shtctl->xsize - esi) / 2) & ~3, (shtctl->ysize - edi) / 2);
-			sheet_updown(sht, shtctl->top); /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ß¶ï¿½Ö¸ï¿½ï¿½Îªï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ä¸ß¶È£ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½Ï²ï¿½*/
+			sheet_updown(sht, shtctl->top); /*½«´°¿ÚÍ¼²ã¸ß¶ÈÖ¸¶¨Îªµ±Ç°Êó±êËùÔÚÍ¼²ãµÄ¸ß¶È£¬Êó±êÒÆµ½ÉÏ²ã*/
 			reg[7] = (int) sht;
 			break;
 		case 6:
@@ -536,15 +574,15 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 8:
 			memman_init((struct MEMMAN *) (ebx + ds_base));
-			ecx &= 0xfffffff0; /*ï¿½ï¿½16ï¿½Ö½ï¿½Îªï¿½ï¿½Î»*/
+			ecx &= 0xfffffff0; /*ÒÔ16×Ö½ÚÎªµ¥Î»*/
 			memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 			break;
 		case 9:
-			ecx = (ecx + 0x0f) & 0xfffffff0; /*ï¿½ï¿½16ï¿½Ö½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½Î»È¡ï¿½ï¿½*/
+			ecx = (ecx + 0x0f) & 0xfffffff0; /*ÒÔ16×Ö½ÚÎªµ¥Î»½øÎ»È¡Õû*/
 			reg[7] = memman_alloc((struct MEMMAN *) (ebx + ds_base), ecx);
 			break;
 		case 10:
-			ecx = (ecx + 0x0f) & 0xfffffff0; /*ï¿½ï¿½16ï¿½Ö½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½Î»È¡ï¿½ï¿½*/
+			ecx = (ecx + 0x0f) & 0xfffffff0; /*ÒÔ16×Ö½ÚÎªµ¥Î»½øÎ»È¡Õû*/
 			memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 			break;
 		case 11:
@@ -583,7 +621,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				io_cli();
 				if (fifo32_status(&task->fifo) == 0) {
 					if (eax != 0) {
-						task_sleep(task); /* FIFOÎªï¿½Õ£ï¿½ï¿½ï¿½ï¿½ß²ï¿½ï¿½È´ï¿½*/
+						task_sleep(task); /* FIFOÎª¿Õ£¬ÐÝÃß²¢µÈ´ý*/
 					} else {
 						io_sti();
 						reg[7] = -1;
@@ -592,25 +630,25 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				}
 				i = fifo32_get(&task->fifo);
 				io_sti();
-				if (i <= 1) { /*ï¿½ï¿½ï¿½ï¿½Ã¶ï¿½Ê±ï¿½ï¿½*/
-					/*Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ê¾ï¿½ï¿½ê£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç½ï¿½ï¿½Â´ï¿½ï¿½ï¿½Ê¾ï¿½Ãµï¿½Öµï¿½ï¿½Îª1*/
-					timer_init(cons->timer, &task->fifo, 1); /*ï¿½Â´ï¿½ï¿½ï¿½Îª1*/
+				if (i <= 1) { /*¹â±êÓÃ¶¨Ê±Æ÷*/
+					/*Ó¦ÓÃ³ÌÐòÔËÐÐÊ±²»ÐèÒªÏÔÊ¾¹â±ê£¬Òò´Ë×ÜÊÇ½«ÏÂ´ÎÏÔÊ¾ÓÃµÄÖµÖÃÎª1*/
+					timer_init(cons->timer, &task->fifo, 1); /*ÏÂ´ÎÖÃÎª1*/
 					timer_settime(cons->timer, 50);
 				}
-				if (i == 2) { /*ï¿½ï¿½ï¿½ON */
+				if (i == 2) { /*¹â±êON */
 					cons->cur_c = COL8_FFFFFF;
 				}
-				if (i == 3) { /*ï¿½ï¿½ï¿½OFF */
+				if (i == 3) { /*¹â±êOFF */
 					cons->cur_c = -1;
 				}
-				if (i == 4) { /*Ö»ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð´ï¿½ï¿½ï¿½*/
+				if (i == 4) { /*Ö»¹Ø±ÕÃüÁîÐÐ´°¿Ú*/
 					timer_cancel(cons->timer);
 					io_cli();
-					fifo32_put(sys_fifo, cons->sht - shtctl->sheets0 + 2024); /*2024ï¿½ï¿½2279*/
+					fifo32_put(sys_fifo, cons->sht - shtctl->sheets0 + 2024); /*2024¡«2279*/
 					cons->sht = 0;
 					io_sti();
 				}
-				if (i >= 256) { /*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý£ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½*/
+				if (i >= 256) { /*¼üÅÌÊý¾Ý£¨Í¨¹ýÈÎÎñA£©µÈ*/
 					reg[7] = i - 256;
 					return 0;
 				}
@@ -618,7 +656,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 16:
 			reg[7] = (int) timer_alloc();
-			((struct TIMER *) reg[7])->flags2 = 1; /*ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½È¡ï¿½ï¿½*/
+			((struct TIMER *) reg[7])->flags2 = 1; /*ÔÊÐí×Ô¶¯È¡Ïû*/
 			break;
 		case 17:
 			timer_init((struct TIMER *) ebx, &task->fifo, eax + 256);
@@ -755,6 +793,33 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		case 38:
 			reg[7] = MMU_MODE;
 			break;
+		case 60:
+			open_syncmon(shtctl, 0);
+			break;
+		case 61: // get user shared var
+			reg[7] = g_user_shared_var;
+			break;
+		case 62: // set user shared var
+			g_user_shared_var = eax;
+			break;
+		case 63: // user sem wait
+			user_sem_wait();
+			break;
+		case 64: // user sem post
+			user_sem_post();
+			break;
+		case 65: // user sequence reset
+			user_sync_init();
+			break;
+		case 66: // user pc init
+			user_pc_init();
+			break;
+		case 67: // user pc produce
+			user_pc_produce(eax);
+			break;
+		case 68: // user pc consume
+			reg[7] = user_pc_consume();
+			break;
 	}
 	return 0;
 }
@@ -764,7 +829,7 @@ int *inthandler0c(int *esp)
 	struct TASK *task = task_now();
 	struct CONSOLE *cons = task->cons;
 	char s[40];
-	cons_putstr0(cons, "ï¿½ï¿½Õ»ï¿½ì³£ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½Ð´ï¿½ï¿½ó£¡£ï¿½\nINT 0C :\n Stack Exception.\n");
+	cons_putstr0(cons, "¶ÑÕ»Òì³££¬Ó¦ÓÃÈí¼þ³ÌÐòÖ´ÐÐ´íÎó£¡£¡\nINT 0C :\n Stack Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
 	return &(task->tss.esp0);
@@ -775,19 +840,19 @@ int *inthandler0d(int *esp)
 	struct TASK *task = task_now();
 	struct CONSOLE *cons = task->cons;
 	char s[40];
-	cons_putstr0(cons, "Ò»ï¿½ã±£ï¿½ï¿½ï¿½ï¿½ï¿½â£¬Ó¦ï¿½ï¿½ï¿½ï¿½Í£Ö¹ï¿½ï¿½ï¿½Ð£ï¿½Ó¦ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\nINT 0D :\n General Protected Exception.\n");
+	cons_putstr0(cons, "Ò»°ã±£»¤ÀýÍâ£¬Ó¦ÓÃÒÑÍ£Ö¹ÔËÐÐ£¬Ó¦ÓÃ´¥·¢±£»¤³ÌÐò¡£\nINT 0D :\n General Protected Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
 	return &(task->tss.esp0);
 }
 
 /* ============================================================
- * timertest: ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á¹¹ï¿½ë·½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
- * TC-01: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ë³ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½3ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ë³ï¿½ï¿½Ó¦ÎªT1<T2<T3ï¿½ï¿½
- * TC-02: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½Ô£ï¿½60ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¬Ê±ï¿½ï¿½ï¿½Ð£ï¿½
- * TC-03: timer_cancel ï¿½ß½ï¿½ï¿½ï¿½ï¿½
- * TC-04: ï¿½ØºÄ¾ï¿½ï¿½ï¿½ï¿½Ô£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½0ï¿½ï¿½
- * TC-05: timeout=0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½
+ * timertest: ¶¨Ê±Æ÷¹ÜÀí½á¹¹Óë·½·¨²âÊÔÃüÁî
+ * TC-01: »ù±¾³¬Ê±Ë³ÐòÑéÖ¤£¨3¸ö¶¨Ê±Æ÷£¬³¬Ê±Ë³ÐòÓ¦ÎªT1<T2<T3£©
+ * TC-02: ´óÁ¿²¢·¢¶¨Ê±Æ÷Ñ¹Á¦²âÊÔ£¨60¸ö¶¨Ê±Æ÷Í¬Ê±ÔËÐÐ£©
+ * TC-03: timer_cancel ±ß½ç²âÊÔ
+ * TC-04: ³ØºÄ¾¡²âÊÔ£¨Á¬Ðø·ÖÅäÖ±µ½·µ»Ø0£©
+ * TC-05: timeout=0 Á¢¼´µ½ÆÚ²âÊÔ
  * ============================================================ */
 void cmd_timertest(struct CONSOLE *cons)
 {
@@ -798,25 +863,25 @@ void cmd_timertest(struct CONSOLE *cons)
 
 	cons_putstr0(cons, "\n--- Timer Test Start ---\n");
 
-	/* TC-01: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Ë³ï¿½ï¿½ï¿½ï¿½Ö¤ */
+	/* TC-01: »ù±¾³¬Ê±Ë³ÐòÑéÖ¤ */
 	cons_putstr0(cons, "\n[TC-01] Basic timeout order (3 timers)\n");
 	{
 		struct TIMER *t1, *t2, *t3;
 		t1 = timer_alloc(); timer_init(t1, &task->fifo, 0x101);
 		t2 = timer_alloc(); timer_init(t2, &task->fifo, 0x102);
 		t3 = timer_alloc(); timer_init(t3, &task->fifo, 0x103);
-		/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½t3ï¿½ï¿½Ì£ï¿½t1ï¿½î³¤ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* ¹ÊÒâÂÒÐòÉèÖÃ£ºt3×î¶Ì£¬t1×î³¤£¬ÑéÖ¤Á´±íÅÅÐò */
 		timer_settime(t3, 5);
 		timer_settime(t1, 15);
 		timer_settime(t2, 10);
-		/* ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½timeoutÖµï¿½ï¿½ï¿½ï¿½ t3 < t2 < t1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* ÑéÖ¤Èý¸ö¶¨Ê±Æ÷µÄtimeoutÖµÂú×ã t3 < t2 < t1£¨ÉýÐò£© */
 		pass = (t3->timeout < t2->timeout && t2->timeout < t1->timeout) ? 1 : 0;
 		sprintf(s, "  Link order check: %s\n", pass ? "PASS" : "FAIL");
 		cons_putstr0(cons, s);
 		sprintf(s, "  t3->timeout=%u t2->timeout=%u t1->timeout=%u\n",
 			t3->timeout, t2->timeout, t1->timeout);
 		cons_putstr0(cons, s);
-		/* ï¿½È´ï¿½3ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½FIFOï¿½ï¿½ */
+		/* µÈ´ý3¸ö¶¨Ê±Æ÷È«²¿µ½ÆÚ£¨Ïû·ÑFIFO£© */
 		count = 0;
 		while (count < 3) {
 			io_cli();
@@ -832,11 +897,11 @@ void cmd_timertest(struct CONSOLE *cons)
 		cons_putstr0(cons, "  All 3 timers fired: PASS\n");
 	}
 
-	/* TC-02: 60ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	/* TC-02: 60¸ö²¢·¢¶¨Ê±Æ÷Ñ¹Á¦²âÊÔ */
 	cons_putstr0(cons, "\n[TC-02] 60 concurrent timers stress test\n");
 	{
 		int fired = 0;
-		/* ï¿½ï¿½ï¿½ï¿½60ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±Öµ1~60 tick */
+		/* ·ÖÅä60¸ö¶¨Ê±Æ÷£¬³¬Ê±Öµ1~60 tick */
 		for (i = 0; i < 60; i++) {
 			timers[i] = timer_alloc();
 			if (timers[i] == 0) {
@@ -848,7 +913,7 @@ void cmd_timertest(struct CONSOLE *cons)
 		}
 		sprintf(s, "  Allocated 60 timers, pool used: ~%d/%d\n", 60 + 3, MAX_TIMER);
 		cons_putstr0(cons, s);
-		/* ï¿½È´ï¿½60ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* µÈ´ý60¸öÈ«²¿µ½ÆÚ */
 		while (fired < 60) {
 			io_cli();
 			if (fifo32_status(&task->fifo) > 0) {
@@ -864,12 +929,12 @@ void cmd_timertest(struct CONSOLE *cons)
 		cons_putstr0(cons, s);
 	}
 
-	/* TC-03: timer_cancel ï¿½ß½ï¿½ï¿½ï¿½ï¿½ */
+	/* TC-03: timer_cancel ±ß½ç²âÊÔ */
 	cons_putstr0(cons, "\n[TC-03] timer_cancel boundary test\n");
 	{
 		struct TIMER *tc;
 		int ret;
-		/* È¡ï¿½ï¿½Î´ï¿½ï¿½ï¿½ÚµÄ¶ï¿½Ê±ï¿½ï¿½ */
+		/* È¡ÏûÎ´µ½ÆÚµÄ¶¨Ê±Æ÷ */
 		tc = timer_alloc();
 		timer_init(tc, &task->fifo, 0x301);
 		timer_settime(tc, 200);
@@ -877,7 +942,7 @@ void cmd_timertest(struct CONSOLE *cons)
 		sprintf(s, "  Cancel active timer: ret=%d (expect 1): %s\n",
 			ret, ret == 1 ? "PASS" : "FAIL");
 		cons_putstr0(cons, s);
-		/* È¡ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½ï¿½Ä¶ï¿½Ê±ï¿½ï¿½ï¿½ï¿½flagsï¿½Ñ±ï¿½ÎªALLOC=1ï¿½ï¿½ï¿½ï¿½USING=2ï¿½ï¿½ */
+		/* È¡ÏûÒÑÈ¡ÏûµÄ¶¨Ê±Æ÷£¨flagsÒÑ±äÎªALLOC=1£¬·ÇUSING=2£© */
 		ret = timer_cancel(tc);
 		sprintf(s, "  Cancel already-cancelled: ret=%d (expect 0): %s\n",
 			ret, ret == 0 ? "PASS" : "FAIL");
@@ -885,12 +950,12 @@ void cmd_timertest(struct CONSOLE *cons)
 		timer_free(tc);
 	}
 
-	/* TC-04: ï¿½ØºÄ¾ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	/* TC-04: ³ØºÄ¾¡²âÊÔ */
 	cons_putstr0(cons, "\n[TC-04] Pool exhaustion test\n");
 	{
 		static struct TIMER *tmp[MAX_TIMER];
 		int alloc_count = 0;
-		/* ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ê§ï¿½ï¿½ */
+		/* ³ÖÐø·ÖÅäÖ±µ½Ê§°Ü */
 		for (i = 0; i < MAX_TIMER; i++) {
 			tmp[i] = timer_alloc();
 			if (tmp[i] == 0) break;
@@ -901,21 +966,21 @@ void cmd_timertest(struct CONSOLE *cons)
 		sprintf(s, "  timer_alloc returns 0 at exhaustion: %s\n",
 			tmp[alloc_count] == 0 ? "PASS" : "FAIL");
 		cons_putstr0(cons, s);
-		/* ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* ÊÍ·ÅËùÓÐ */
 		for (i = 0; i < alloc_count; i++) {
 			timer_free(tmp[i]);
 		}
 		cons_putstr0(cons, "  Pool freed.\n");
 	}
 
-	/* TC-05: timeout=0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ */
+	/* TC-05: timeout=0 Á¢¼´µ½ÆÚ²âÊÔ */
 	cons_putstr0(cons, "\n[TC-05] timeout=0 immediate fire test\n");
 	{
 		struct TIMER *t0;
 		t0 = timer_alloc();
 		timer_init(t0, &task->fifo, 0x501);
 		timer_settime(t0, 0);
-		/* timeout=0 ï¿½ï¿½Î¶ï¿½ï¿½ timeout = timerctl.count+0ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½tickï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* timeout=0 ÒâÎ¶×Å timeout = timerctl.count+0£¬ÏÂÒ»¸ötick¼´´¥·¢ */
 		count = 0;
 		while (count == 0) {
 			io_cli();
@@ -931,13 +996,13 @@ void cmd_timertest(struct CONSOLE *cons)
 		cons_putstr0(cons, "  timeout=0 fired on next tick: PASS\n");
 	}
 
-	/* TC-06: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð­Í¬ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½ task_timer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	/* TC-06: µ÷¶ÈÆ÷Ð­Í¬ÑéÖ¤¡ª¡ªÑ¹Á¦²âÊÔÆÚ¼ä task_timer ÈÔÕý³£´¥·¢ */
 	cons_putstr0(cons, "\n[TC-06] Scheduler cooperation: task_timer survives stress\n");
 	{
 		unsigned int count_before, count_after;
 		int switches_ok;
-		/* ï¿½ï¿½Â¼ï¿½ï¿½Ç° tickï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 30 ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
-		   ï¿½Ú¼ï¿½ task_timer Ò²ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Î´ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* ¼ÇÂ¼µ±Ç° tick£¬Æô¶¯ 30 ¸ö¶¨Ê±Æ÷£¬µÈ´ýÈ«²¿´¥·¢£¬
+		   ÆÚ¼ä task_timer Ò²ÔÚÔËÐÐ£¬ÑéÖ¤µ÷¶ÈÎ´±»×è¶Ï */
 		count_before = timerctl.count;
 		for (i = 0; i < 30; i++) {
 			timers[i] = timer_alloc();
@@ -957,25 +1022,25 @@ void cmd_timertest(struct CONSOLE *cons)
 			}
 		}
 		count_after = timerctl.count;
-		/* task_timer ï¿½ï¿½ priority=2 tick Îªï¿½ï¿½ï¿½ï¿½ï¿½Ð»ï¿½ï¿½ï¿½
-		   ï¿½ï¿½ count ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ IRQ0 Î´ï¿½ï¿½ï¿½ï¿½ï¿½ */
+		/* task_timer ÒÔ priority=2 tick ÎªÖÜÆÚÇÐ»»£¬
+		   Èô count Ôö³¤Õý³£ËµÃ÷ IRQ0 Î´±»×è¶Ï */
 		switches_ok = (count_after > count_before) ? 1 : 0;
 		sprintf(s, "  tick advanced %u during stress (expect >0): %s\n",
 			count_after - count_before, switches_ok ? "PASS" : "FAIL");
 		cons_putstr0(cons, s);
-		/* ï¿½ï¿½Ö¤ task_timer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð£ï¿½flags=USING=2ï¿½ï¿½ */
+		/* ÑéÖ¤ task_timer ÈÔÔÚÁ´±íÖÐ£¨flags=USING=2£© */
 		sprintf(s, "  task_timer still active (flags=%d, expect 2): %s\n",
 			task_timer->flags,
 			task_timer->flags == 2 ? "PASS" : "FAIL");
 		cons_putstr0(cons, s);
 	}
 
-	/* TC-07: timerctl.count ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤ */
+	/* TC-07: timerctl.count µ¥µ÷µÝÔöÑéÖ¤ */
 	cons_putstr0(cons, "\n[TC-07] timerctl.count monotonic increase\n");
 	{
 		unsigned int c1, c2, c3;
 		c1 = timerctl.count;
-		/* ï¿½È´ï¿½Ô¼ 5 tick */
+		/* µÈ´ýÔ¼ 5 tick */
 		{
 			struct TIMER *tw = timer_alloc();
 			timer_init(tw, &task->fifo, 0x701);
@@ -990,7 +1055,7 @@ void cmd_timertest(struct CONSOLE *cons)
 			}
 		}
 		c2 = timerctl.count;
-		/* ï¿½Ùµï¿½Ô¼ 5 tick */
+		/* ÔÙµÈÔ¼ 5 tick */
 		{
 			struct TIMER *tw = timer_alloc();
 			timer_init(tw, &task->fifo, 0x702);
@@ -1012,21 +1077,21 @@ void cmd_timertest(struct CONSOLE *cons)
 		cons_putstr0(cons, s);
 	}
 
-	/* TC-08: timer_cancelall ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤ */
+	/* TC-08: timer_cancelall ÇåÀíÑéÖ¤ */
 	cons_putstr0(cons, "\n[TC-08] timer_cancelall cleanup\n");
 	{
 		struct FIFO32 test_fifo;
 		int test_buf[32];
 		int active_before, active_after, j;
 		fifo32_init(&test_fifo, 32, test_buf, 0);
-		/* ï¿½ï¿½ test_fifo ×¢ï¿½ï¿½ 10 ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½flags2=1 */
+		/* Ïò test_fifo ×¢²á 10 ¸ö¶¨Ê±Æ÷£¬flags2=1 */
 		for (i = 0; i < 10; i++) {
 			timers[i] = timer_alloc();
 			timers[i]->flags2 = 1;
 			timer_init(timers[i], &test_fifo, 0x800 + i);
-			timer_settime(timers[i], 200 + i); /* ï¿½ï¿½Ê±ï¿½Ï³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ */
+			timer_settime(timers[i], 200 + i); /* ³¬Ê±½Ï³¤£¬²»»á×ÔÈ»µ½ÆÚ */
 		}
-		/* Í³ï¿½ï¿½ test_fifo ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½Ô¾ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ */
+		/* Í³¼Æ test_fifo ¹ØÁªµÄ»îÔ¾¶¨Ê±Æ÷Êý */
 		active_before = 0;
 		for (j = 0; j < MAX_TIMER; j++) {
 			if (timerctl.timers0[j].flags == 2 &&
@@ -1050,7 +1115,7 @@ void cmd_timertest(struct CONSOLE *cons)
 		cons_putstr0(cons, s);
 	}
 
-	/* TC-09: Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½Ôºï¿½Ø»Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
+	/* TC-09: Ñ¹Á¦²âÊÔºó³Ø»Ö¸´Õý³££¬¿É¼ÌÐø·ÖÅä */
 	cons_putstr0(cons, "\n[TC-09] Pool recovery after stress\n");
 	{
 		struct TIMER *t_new;
@@ -1061,11 +1126,11 @@ void cmd_timertest(struct CONSOLE *cons)
 		if (t_new) timer_free(t_new);
 	}
 
-	/* TC-10: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ä¸´ï¿½Ó¶È²ï¿½ï¿½ï¿½
-	 * ï¿½Ö±ï¿½ï¿½ï¿½ n=0,50,100,200 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Â¶ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ tick ï¿½ï¿½
-	 * ï¿½ï¿½ï¿½ï¿½ PIT ï¿½ï¿½ï¿½ï¿½Îª 10ms/tickï¿½ï¿½ï¿½Ë´ï¿½ï¿½ï¿½ timerctl.count ï¿½ï¿½Öµï¿½ï¿½ï¿½Æ£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È£ï¿½
-	 * ï¿½ï¿½ÒªÄ¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤ï¿½ï¿½ n ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ */
-	cons_putstr0(cons, "\n[TC-10] timer_settime insertion complexity\n");
+	/* TC-10: Á´±í²åÈëÊ±¼ä¸´ÔÓ¶È²âÁ¿
+	 * ·Ö±ðÔÚ n=0,50,100,200 ¸ö±³¾°¶¨Ê±Æ÷´æÔÚÊ±£¬²âÁ¿²åÈëÒ»¸öÐÂ¶¨Ê±Æ÷ËùÐè tick Êý
+	 * ÓÉÓÚ PIT ¾«¶ÈÎª 10ms/tick£¬´Ë´¦ÓÃ timerctl.count ²îÖµ½üËÆ£¨´ÖÁ£¶È£©
+	 * Ö÷ÒªÄ¿µÄÊÇÑéÖ¤Ëæ n Ôö´ó²åÈëºÄÊ±ÊÇ·ñ³ÊÏßÐÔÔö³¤Ç÷ÊÆ */
+cons_putstr0(cons, "\n[TC-10] timer_settime insertion complexity\n");
 	{
 		int n_bg[] = {0, 50, 100, 200};
 		unsigned int tc10_ticks[4];
@@ -1074,7 +1139,7 @@ void cmd_timertest(struct CONSOLE *cons)
 		struct TIMER *probe;
 		unsigned int t_start, t_end;
 
-		/* å…ˆæ”¶é›†æ‰€æœ‰æµ‹é‡ç»“æžœï¼Œå†ç»Ÿä¸€è¾“å‡ºï¼Œé¿å…è¾“å‡ºè¢« task switch æ‰“æ–­ */
+		/* ÏÈÊÕ¼¯ËùÓÐ²âÁ¿½á¹û£¬ÔÙÍ³Ò»Êä³ö£¬±ÜÃâÊä³ö±» task switch ´ò¶Ï */
 		for (k = 0; k < 4; k++) {
 			int n = n_bg[k];
 			for (b = 0; b < n; b++) {
@@ -1098,7 +1163,7 @@ void cmd_timertest(struct CONSOLE *cons)
 				}
 			}
 		}
-		/* æ‹¼æˆä¸€ä¸ªå­—ç¬¦ä¸²åŽä¸€æ¬¡æ€§è¾“å‡ºï¼Œå‡å°‘è¢« task switch æ‰“æ–­çš„æ¦‚çŽ‡ */
+		/* Æ´³ÉÒ»¸ö×Ö·û´®ºóÒ»´ÎÐÔÊä³ö£¬¼õÉÙ±» task switch ´ò¶ÏµÄ¸ÅÂÊ */
 		{
 			char out[256];
 			int pos = 0;
@@ -1115,9 +1180,9 @@ void cmd_timertest(struct CONSOLE *cons)
 		}
 	}
 
-	/* TC-11: MAX_TIMER ï¿½ï¿½ï¿½Ýºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤
-	 * ï¿½ï¿½ MAX_TIMER ï¿½ï¿½ 500 ï¿½ï¿½Îª 800 ï¿½ï¿½ï¿½ï¿½ï¿½Ü³ØºÄ¾ï¿½ï¿½ï¿½ï¿½Ô£ï¿½
-	 * ï¿½ï¿½Ö¤ï¿½É·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ */
+	/* TC-11: MAX_TIMER À©ÈÝºó³ØÈÝÁ¿ÑéÖ¤
+	 * ½« MAX_TIMER ´Ó 500 ¸ÄÎª 800 ºóÖØÅÜ³ØºÄ¾¡²âÊÔ£¬
+	 * ÑéÖ¤¿É·ÖÅäÊýÁ¿ÏàÓ¦Ôö¼Ó */
 	cons_putstr0(cons, "\n[TC-11] MAX_TIMER capacity check\n");
 	{
 		static struct TIMER *tmp2[MAX_TIMER];
