@@ -1130,33 +1130,30 @@ void cmd_timertest(struct CONSOLE *cons)
 	 * 分别在 n=0,50,100,200 个背景定时器存在时，测量插入一个新定时器所需 tick 数
 	 * 由于 PIT 精度为 10ms/tick，此处用 timerctl.count 差值近似（粗粒度）
 	 * 主要目的是验证随 n 增大插入耗时是否呈线性增长趋势 */
-	cons_putstr0(cons, "\n[TC-10] timer_settime insertion complexity\n");
+cons_putstr0(cons, "\n[TC-10] timer_settime insertion complexity\n");
 	{
 		int n_bg[] = {0, 50, 100, 200};
+		unsigned int tc10_ticks[4];
 		int k, b;
 		static struct TIMER *bg[200];
 		struct TIMER *probe;
 		unsigned int t_start, t_end;
 
+		/* 先收集所有测量结果，再统一输出，避免输出被 task switch 打断 */
 		for (k = 0; k < 4; k++) {
 			int n = n_bg[k];
-			/* 建立 n 个背景定时器，超时值均匀分布在 500~1500 tick */
 			for (b = 0; b < n; b++) {
 				bg[b] = timer_alloc();
 				if (bg[b] == 0) break;
 				timer_init(bg[b], &task->fifo, 0xf00);
-				timer_settime(bg[b], 500 + b * 5);
+				timer_settime(bg[b], 50000 + b * 5);
 			}
-			/* 测量插入一个超时值为 750 tick（落在链表中间）的定时器 */
 			probe = timer_alloc();
 			timer_init(probe, &task->fifo, 0xf01);
 			t_start = timerctl.count;
-			timer_settime(probe, 750);
+			timer_settime(probe, 51000);
 			t_end = timerctl.count;
-			sprintf(s, "  n=%3d bg timers: insert took %u tick(s)\n",
-				n, t_end - t_start);
-			cons_putstr0(cons, s);
-			/* 清理：取消 probe 和所有背景定时器 */
+			tc10_ticks[k] = t_end - t_start;
 			timer_cancel(probe);
 			timer_free(probe);
 			for (b = 0; b < n; b++) {
@@ -1166,7 +1163,21 @@ void cmd_timertest(struct CONSOLE *cons)
 				}
 			}
 		}
-		cons_putstr0(cons, "  (tick resolution=10ms; 0 tick = sub-10ms, expected for small n)\n");
+		/* 拼成一个字符串后一次性输出，减少被 task switch 打断的概率 */
+		{
+			char out[256];
+			int pos = 0;
+			for (k = 0; k < 4; k++) {
+				sprintf(s, "n=%3d: %u tick(s)\n", n_bg[k], tc10_ticks[k]);
+				for (i = 0; s[i] != 0; i++) out[pos++] = s[i];
+			}
+			sprintf(s, "(0 tick = sub-10ms, expected)\n");
+			for (i = 0; s[i] != 0; i++) out[pos++] = s[i];
+			out[pos] = 0;
+			io_cli();
+			cons_putstr0(cons, out);
+			io_sti();
+		}
 	}
 
 	/* TC-11: MAX_TIMER 扩容后池容量验证
