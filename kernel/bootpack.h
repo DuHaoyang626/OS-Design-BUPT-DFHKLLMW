@@ -263,6 +263,7 @@ struct TSS32 {
 struct TASK {
 	int sel, flags;
 	int level, priority;
+	unsigned int enqueue_tick; // 记录任务进入就绪队列的时间�?
 	struct FIFO32 fifo;
 	struct TSS32 tss;
 	struct SEGMENT_DESCRIPTOR ldt[2];
@@ -287,12 +288,14 @@ struct TASKCTL {
 extern struct TASKCTL *taskctl;
 extern struct TIMER *task_timer;
 extern int kernel_cr3;
+extern int g_sched_enable_aging;
 struct TASK *task_now(void);
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
 void task_run(struct TASK *task, int level, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);
+int task_aging_limit_for_level(int level);
 
 /* window.c */
 void make_window8(unsigned char *buf, int xsize, int ysize, char *title, char act);
@@ -318,6 +321,8 @@ void cons_newline(struct CONSOLE *cons);
 void cons_putstr0(struct CONSOLE *cons, char *s);
 void cons_putstr1(struct CONSOLE *cons, char *s, int l);
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal);
+void cmd_taskmon(struct CONSOLE *cons, int memtotal);
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal);
 void cmd_mem(struct CONSOLE *cons, int memtotal);
 void cmd_cls(struct CONSOLE *cons);
 void cmd_ls(struct CONSOLE *cons);
@@ -352,8 +357,20 @@ int tek_getsize(unsigned char *p);
 int tek_decomp(unsigned char *p, char *q, int size);
 
 /* bootpack.c */
+extern int g_user_shared_var;
+void user_sync_init(void);
+void user_sem_wait(void);
+void user_sem_post(void);
+
+void user_pc_init(void);
+void user_pc_produce(int val);
+int user_pc_consume(void);
+
+void syncdemo_start_once(void);
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
+struct SHEET *open_taskmon(struct SHTCTL *shtctl, unsigned int memtotal);
+struct SHEET *open_syncmon(struct SHTCTL *shtctl, unsigned int memtotal);
 
 /*cmos.c*/
 #define cmos_index 0x70
