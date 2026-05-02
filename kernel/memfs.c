@@ -330,6 +330,16 @@ int memfs_format(int disk_kb)
     return MEMFS_OK;
 }
 
+int memfs_release(void)
+{
+    struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
+    if (g_memdisk == 0) return MEMFS_ERR_NOTFOUND;
+    memman_free_4k(memman, (int) g_memdisk, g_memdisk_bytes);
+    g_memdisk = 0;
+    g_memdisk_bytes = 0;
+    return MEMFS_OK;
+}
+
 int memfs_mkdir(const char *path)
 {
     int parent;

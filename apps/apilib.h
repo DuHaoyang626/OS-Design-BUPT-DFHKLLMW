@@ -78,6 +78,7 @@ int api_memfs_read(char *path, int offset, char *buf, int len);
 int api_memfs_copy(char *src, char *dst);
 int api_memfs_delete(char *path);
 int api_memfs_list(char *path, char *outbuf, int outbuf_len);
+int api_memfs_release(void);
 
 // cpuid
 void asm_cpuid(int id_eax, int id_ecx, int *eax, int *ebx, int *ecx, int *edx);

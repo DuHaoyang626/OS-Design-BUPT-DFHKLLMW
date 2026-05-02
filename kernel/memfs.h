@@ -22,6 +22,7 @@
 /* 初始化/格式化 */
 int memfs_format(int disk_kb);
 int memfs_ready(void);
+int memfs_release(void);
 
 /* 目录/文件操作 */
 int memfs_mkdir(const char *path);

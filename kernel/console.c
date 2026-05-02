@@ -19,6 +19,7 @@ static void cmd_mread(struct CONSOLE *cons, char *cmdline);
 static void cmd_mcopy(struct CONSOLE *cons, char *cmdline);
 static void cmd_mls(struct CONSOLE *cons, char *cmdline);
 static void cmd_mrm(struct CONSOLE *cons, char *cmdline);
+static void cmd_mrelease(struct CONSOLE *cons, char *cmdline);
 static void cmd_memfs_help(struct CONSOLE *cons);
 
 void console_task(struct SHEET *sheet, int memtotal)
@@ -235,6 +236,8 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		cmd_mls(cons, cmdline);
 	} else if (strncmp(cmdline, "mrm ", 4) == 0 && cons->sht != 0) {
 		cmd_mrm(cons, cmdline);
+	} else if (strcmp(cmdline, "mrelease") == 0 && cons->sht != 0) {
+    	cmd_mrelease(cons, cmdline);
 	} else if (strcmp(cmdline, "mem") == 0 && cons->sht != 0) {
 		cmd_mem(cons, memtotal);
 	} else if (strcmp(cmdline, "cls") == 0 && cons->sht != 0) {
@@ -305,38 +308,43 @@ static void cmd_memfs_help(struct CONSOLE *cons)
 	cons_putstr0(cons, "mcopy <src> <dst> memfs\xB8\xB4\xD6\xC6\xCE\xC4\xBC\xFE\n");
 	cons_putstr0(cons, "mls <path>       memfs\xC1\xD0\xC4\xBF\xC2\xBC\n");
 	cons_putstr0(cons, "mrm <path>       memfs\xC9\xBE\xB3\xFD\xCE\xC4\xBC\xFE\x2F\xC4\xBF\xC2\xBC\n\n");
+	cons_putstr0(cons, "mrelease         memfs\xCA\xCD\xB7\xC5\xC4\xDA\xB4\xE6\n");
 }
 
 static void cmd_memfs_putret(struct CONSOLE *cons, int ret)
 {
 	char s[64];
 	if (ret >= 0) {
-		sprintf(s, "[OK] ret=%d\n", ret);
-		cons_putstr0(cons, s);
-		return;
+	    if (ret == 0) {
+    	    cons_putstr0(cons, "\x5B\xB2\xD9\xD7\xF7\xB3\xC9\xB9\xA6\x5D\n");
+    	} else {
+        	sprintf(s, "\x5B\xB2\xD9\xD7\xF7\xB3\xC9\xB9\xA6\x5D ret=%d\n", ret);
+        	cons_putstr0(cons, s);
+    	}
+    	return;
 	}
-	cons_putstr0(cons, "[ERR] ");
+	cons_putstr0(cons, "\x5B\xB4\xED\xCE\xF3\x5D ");
 	sprintf(s, "ret=%d ", ret);
 	cons_putstr0(cons, s);
 	switch (ret) {
-		case -1:
-			cons_putstr0(cons, "EINVAL\n");
-			break;
-		case -2:
-			cons_putstr0(cons, "ENOSPACE\n");
-			break;
-		case -3:
-			cons_putstr0(cons, "NOTFOUND\n");
-			break;
-		case -4:
-			cons_putstr0(cons, "EXISTS\n");
-			break;
-		case -5:
-			cons_putstr0(cons, "NOTDIR\n");
-			break;
-		case -6:
-			cons_putstr0(cons, "ISDIR\n");
-			break;
+    	case -1:  
+			cons_putstr0(cons, "\xB2\xCE\xCA\xFD\xCE\xDE\xD0\xA7\n");    
+			break;  // 参数无效
+    	case -2:  
+			cons_putstr0(cons, "\xBF\xD5\xBC\xE4\xB2\xBB\xD7\xE3\n");    
+			break;  // 空间不足
+    	case -3:  
+			cons_putstr0(cons, "\xCE\xB4\xD5\xD2\xB5\xBD\n");            
+			break;  // 未找到
+    	case -4:  
+			cons_putstr0(cons, "\xD2\xD1\xB4\xE6\xD4\xDA\n");            
+			break;  // 已存在
+    	case -5:  
+			cons_putstr0(cons, "\xB2\xBB\xCA\xC7\xC4\xBF\xC2\xBC\n");    
+			break;  // 不是目录
+    	case -6:  
+			cons_putstr0(cons, "\xCA\xC7\xC4\xBF\xC2\xBC\n");            
+			break;  // 是目录
 		default:
 			cons_putstr0(cons, "ERROR\n");
 			break;
@@ -436,7 +444,11 @@ static void cmd_mcreate(struct CONSOLE *cons, char *cmdline)
 	cons_putstr0(cons, path);
 	cons_putstr0(cons, "\n");
 	ret = memfs_create(path);
-	cmd_memfs_putret(cons, ret);
+	if (ret >= 0) {
+		cons_putstr0(cons, "[OK] \xCE\xC4\xBC\xFE\xB4\xB4\xBD\xA8\xB3\xC9\xB9\xA6\n");
+	} else {
+		cmd_memfs_putret(cons, ret);
+	}
 }
 
 static void cmd_mls(struct CONSOLE *cons, char *cmdline)
@@ -484,6 +496,13 @@ static void cmd_mrm(struct CONSOLE *cons, char *cmdline)
 	cons_putstr0(cons, "\n");
 	ret = memfs_delete(path);
 	cmd_memfs_putret(cons, ret);
+}
+
+static void cmd_mrelease(struct CONSOLE *cons, char *cmdline)
+{
+    int ret;
+    ret = memfs_release();
+    cmd_memfs_putret(cons, ret);
 }
 
 static void cmd_mcopy(struct CONSOLE *cons, char *cmdline)
@@ -1124,6 +1143,9 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				reg[7] = memfs_list((char *) ebx + ds_base, (char *) ecx + ds_base, eax);
 			}
 			break;
+		case 79: /* int api_memfs_release(void); */
+    		reg[7] = memfs_release();
+   			break;
 	}
 	return 0;
 }
