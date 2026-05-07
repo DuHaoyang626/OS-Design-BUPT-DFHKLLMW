@@ -1,7 +1,7 @@
 ///////////////////////////////////////////
 // HELO OS BY:STON 2020
 // COPYRIGHT (C) 2019-2020 STON
-// ����Դ������
+// 
 // STON/PENGZZEKAI/HELO
 // 
 // =================================
@@ -227,7 +227,7 @@ void memman_init(struct MEMMAN *man)
 }
 
 unsigned int memman_total(struct MEMMAN *man)
-/* �����T�C�Y�̍��v��� */
+/* �����T�C�Y�̍��v���? */
 {
 	unsigned int i, t = 0;
 	for (i = 0; i < man->frees; i++) {
@@ -253,7 +253,7 @@ unsigned int memman_alloc(struct MEMMAN *man, unsigned int size)
 }
 
 int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
-/* ��� */
+/* ���? */
 {
 	int i, j;
 	/* �܂Ƃ߂₷�����l����ƁAfree[]��addr���ɕ���ł���ق������� */
@@ -267,18 +267,18 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 	if (i > 0) {
 		/* �O������ */
 		if (man->free[i - 1].addr + man->free[i - 1].size == addr) {
-			/* �O�̂����̈�ɂ܂Ƃ߂��� */
+			/* �O�̂����̈�ɂ܂Ƃ߂���? */
 			man->free[i - 1].size += size;
 			if (i < man->frees) {
 				/* �������� */
 				if (addr + size == man->free[i].addr) {
-					/* �Ȃ�ƌ��Ƃ��܂Ƃ߂��� */
+					/* �Ȃ�ƌ��Ƃ��܂Ƃ߂���? */
 					man->free[i - 1].size += man->free[i].size;
 					/* man->free[i]�̍폜 */
 					/* free[i]���Ȃ��Ȃ����̂őO�ւ߂� */
 					man->frees--;
 					for (; i < man->frees; i++) {
-						man->free[i] = man->free[i + 1]; /* �\���̂̑�� */
+						man->free[i] = man->free[i + 1]; /* �\���̂̑��? */
 					}
 				}
 			}
@@ -287,7 +287,7 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 	}
 	/* �O�Ƃ͂܂Ƃ߂��Ȃ����� */
 	if (i < man->frees) {
-		/* ��낪���� */
+		/* ���?���� */
 		if (addr + size == man->free[i].addr) {
 			/* ���Ƃ͂܂Ƃ߂��� */
 			man->free[i].addr = addr;
@@ -297,7 +297,7 @@ int memman_free(struct MEMMAN *man, unsigned int addr, unsigned int size)
 	}
 	/* �O�ɂ����ɂ��܂Ƃ߂��Ȃ� */
 	if (man->frees < MEMMAN_FREES) {
-		/* free[i]�������A���ւ��炵�āA�����܂���� */
+		/* free[i]�������A���ւ��炵�āA�����܂����? */
 		for (j = man->frees; j > i; j--) {
 			man->free[j] = man->free[j - 1];
 		}
