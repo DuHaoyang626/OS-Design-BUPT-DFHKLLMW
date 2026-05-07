@@ -236,11 +236,11 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 	else if (strcmp(cmdline, "syncdemo") == 0)
 	{
 		/*
-		 * syncdemo: 打开“竞争条�?/信号�?/读写者”综合监视窗�?
-		 * 说明：�?��?�执行会触发内核演示任务集初始化，后�?执�?�只新�?�监视窗�?
+		 * syncdemo: �򿪡�������??/�ź�??/��д�ߡ��ۺϼ��Ӵ�??
+		 * ˵����??????ִ�лᴥ���ں���ʾ���񼯳�ʼ������??ִ???ֻ��???���Ӵ�??
 		 */
 		cmd_syncdemo(cons, memtotal);
-	} else if (strncmp(cmdline, "start", 6) == 0) {
+	} else if (strncmp(cmdline, "start ", 6) == 0) {
 		cmd_start(cons, cmdline, memtotal);
 	} else if (strncmp(cmdline, "ncst", 5) == 0) {
 		cmd_ncst(cons, cmdline, memtotal);
@@ -284,7 +284,7 @@ void cmd_taskmon(struct CONSOLE *cons, int memtotal)
 	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
 	if (open_taskmon(shtctl, memtotal) == 0)
 	{
-		cons_putstr0(cons, "\n�������̵��Ȳ�������\n");
+		cons_putstr0(cons, "Stack exception, application execution error!\nINT 0C :\n Stack Exception.\n");
 	}
 	cons_newline(cons);
 	return;
@@ -294,17 +294,16 @@ void cmd_syncdemo(struct CONSOLE *cons, int memtotal)
 {
 	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
 	/*
-	 * 通过bootpack侧窗口工厂函数打开监�?�窗口�?
-	 * open_syncmon返回0表示资源不足或初始化失败�?
+	 * ͨ��bootpack�ര�ڹ��������򿪼�???����??
+	 * open_syncmon����0��ʾ��Դ������ʼ��ʧ��??
 	 */
 	if (open_syncmon(shtctl, memtotal) == 0)
 	{
-		cons_putstr0(cons, "\nsyncdemo窗口打开失败\n");
+		cons_putstr0(cons, "\nsyncdemo���ڴ�ʧ��\n");
 	}
 	cons_newline(cons);
 	return;
 }
-
 void cmd_mem(struct CONSOLE *cons, int memtotal)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
