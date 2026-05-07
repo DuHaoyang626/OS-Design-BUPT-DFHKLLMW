@@ -15,7 +15,11 @@ DEL      = del
 # Options: LEGACY, FIRST_FIT, NEXT_FIT, BEST_FIT, WORST_FIT
 MEM_ALLOC_ALGO ?= LEGACY
 
-APP_DIRS = 2dball about calc counter cpuid csvv cvtg date gview hview invader mtorz music note pc tview type video
+# Memory mode passed to kernel build.
+# Options: SEGMENT, SEG_PAGE
+MMU_MODE ?= SEGMENT
+
+APP_DIRS = 2dball about calc counter cpuid csvv cvtg date gview hview invader mtorz music note pc tview type video syncdemo race safe syncrst producer consumer
 APP_HELS = \
 	apps/2dball/2dball.hel \
 	apps/about/about.hel \
@@ -36,7 +40,13 @@ APP_HELS = \
 	apps/pc/pc.hel \
 	apps/tview/tview.hel \
 	apps/type/type.hel \
-	apps/video/video.hel
+	apps/video/video.hel \
+	apps/syncdemo/syncdemo.hel \
+	apps/race/race.hel \
+	apps/safe/safe.hel \
+	apps/syncrst/syncrst.hel \
+	apps/producer/producer.hel \
+	apps/consumer/consumer.hel
 
 .PHONY: default full apps libs kernel image run run_full clean
 
@@ -67,9 +77,15 @@ apps : libs
 	$(MAKE) -C ./apps/tview
 	$(MAKE) -C ./apps/type
 	$(MAKE) -C ./apps/video
+	$(MAKE) -C ./apps/syncdemo
+	$(MAKE) -C ./apps/race
+	$(MAKE) -C ./apps/safe
+	$(MAKE) -C ./apps/syncrst
+	$(MAKE) -C ./apps/producer
+	$(MAKE) -C ./apps/consumer
 
 kernel :
-	$(MAKE) -C ./kernel MEM_ALLOC_ALGO=$(MEM_ALLOC_ALGO)
+	$(MAKE) -C ./kernel MEM_ALLOC_ALGO=$(MEM_ALLOC_ALGO) MMU_MODE=$(MMU_MODE)
 
 image : Helo_OS.img
 
@@ -96,8 +112,14 @@ Helo_OS.img : kernel/ipl20.bin kernel/Helo_OS.sys $(APP_HELS) Makefile
 		copy from:apps/csvv/csvv.hel to:@: \
 		copy from:apps/cpuid/cpuid.hel to:@: \
 		copy from:apps/cvtg/cvtg.hel to:@: \
-		copy from:apps/counter/counter.hel to:@: \
-		copy from:apps/video/video.hel to:@: \
+	    copy from:apps/counter/counter.hel to:@: \
+		copy from:apps/syncdemo/syncdemo.hel to:@: \
+		copy from:apps/race/race.hel to:@: \
+		copy from:apps/safe/safe.hel to:@: \
+		copy from:apps/syncrst/syncrst.hel to:@: \
+		copy from:apps/producer/producer.hel to:@: \
+        copy from:apps/consumer/consumer.hel to:@: \
+        copy from:apps/video/video.hel to:@: \
 		copy from:apps/memmap/memmap.hel to:@: \
 		copy from:apps/memfstest/mfstest.hel to:@: \
 		copy from:apps/mtorz/mtorz.hel to:@: \

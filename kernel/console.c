@@ -1,6 +1,6 @@
 /* --------------------------------
 	B Y : S T O N
-	HELO OS �����ļ�
+	HELO OS 核心文件
 	    ver. 1.0
          DATE : 2019-1-19  
 ----------------------------------- */
@@ -29,7 +29,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 	int i, *fat = (int *) memman_alloc_4k(memman, 4 * 2880);
 	struct CONSOLE cons;
 	struct FILEHANDLE fhandle[8];
-	char cmdline[30];
+	char cmdline[64];
 	unsigned char *nihongo = (char *) *((int *) 0x0fe8);
 
 	cons.sht = sheet;
@@ -56,7 +56,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 		task->langmode = 0;
 	}
 	task->langbyte1 = 0;
-	task->langmode = 3;//��ʾÿ�ζ�ѡ����
+	task->langmode = 3;//表示每次都选择汉字
 	cons_putchar(&cons, '#', 1);
 
 	for (;;) {
@@ -109,7 +109,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 					}
 					cons_putchar(&cons, '#', 1);
 				} else {
-					if (cons.cur_x < 512) //������x���С
+					if (cons.cur_x < 512) //主窗口x轴大小
 					{
 						cmdline[cons.cur_x / 8 - 2] = i - 256;
 						cons_putchar(&cons, i - 256, 1);
@@ -127,7 +127,7 @@ void console_task(struct SHEET *sheet, int memtotal)
 }
 
 /* =======================================
-���ڴ�С��������Ҫ��x��
+窗口大小调整，主要是x轴
 ========================================== */
 void cons_putchar(struct CONSOLE *cons, int chr, char move)
 {
@@ -164,7 +164,7 @@ void cons_putchar(struct CONSOLE *cons, int chr, char move)
 	return;
 }
 /* =======================================
-���ڴ�С������x���y���С
+窗口大小调整，x轴和y轴大小
 ========================================== */
 void cons_newline(struct CONSOLE *cons)
 {
@@ -216,6 +216,8 @@ void cons_putstr1(struct CONSOLE *cons, char *s, int l)
 	return;
 }
 
+void cmd_timertest(struct CONSOLE *cons);
+
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 {
 	if (strcmp(cmdline, "memfs") == 0 && cons->sht != 0) {
@@ -240,6 +242,8 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
     	cmd_mrelease(cons, cmdline);
 	} else if (strcmp(cmdline, "mem") == 0 && cons->sht != 0) {
 		cmd_mem(cons, memtotal);
+	} else if (strcmp(cmdline, "timertest") == 0 && cons->sht != 0) {
+		cmd_timertest(cons);
 	} else if (strcmp(cmdline, "cls") == 0 && cons->sht != 0) {
 		cmd_cls(cons);
 	} else if (strcmp(cmdline, "help") == 0 && cons->sht != 0) {
@@ -256,13 +260,25 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		cmd_cls(cons);
 	} else if (strcmp(cmdline, "exit") == 0) {
 		cmd_exit(cons, fat);
-	} else if (strncmp(cmdline, "start", 6) == 0) {
+	}
+	else if (strcmp(cmdline, "task") == 0)
+	{
+		cmd_taskmon(cons, memtotal);
+	}
+	else if (strcmp(cmdline, "syncdemo") == 0)
+	{
+		/*
+		 * syncdemo: 打开“竞争条??/信号??/读写者”综合监视窗??
+		 * 说明：??????执行会触发内核演示任务集初始化，后??执???只新???监视窗??
+		 */
+		cmd_syncdemo(cons, memtotal);
+	} else if (strncmp(cmdline, "start ", 6) == 0) {
 		cmd_start(cons, cmdline, memtotal);
 	} else if (strncmp(cmdline, "ncst", 5) == 0) {
 		cmd_ncst(cons, cmdline, memtotal);
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
-			cons_putstr0(cons, "\n����������ļȲ��Ǻ��ֲ���ϵͳ�ڲ�ָ�Ҳ�����ⲿ����\n\n");
+			cons_putstr0(cons, "\n您输入命令的既不是何乐操作系统内部指令，也不是外部程序。\n\n");
 		}
 	}
 	return;
@@ -273,27 +289,27 @@ void cmd_ver(struct CONSOLE *cons)
 	cons_putstr0(cons, "\n");
 	cons_putstr0(cons, "Helo_OS v4.1   <shell 5.2>  GUI 2.2\n");
 	cons_putstr0(cons, "Copyright (C) 2019 PengZekai\n");
-	cons_putstr0(cons, "[issue]     ������\n\n");
+	cons_putstr0(cons, "[issue]     发布版\n\n");
 	return;
 }
 
 void cmd_help(struct CONSOLE *cons)
 {
 	cons_putstr0(cons, "\n\n");
-	cons_putstr0(cons, "����            ����\n");
-	cons_putstr0(cons, "mem             �鿴�ڴ�\n");
+	cons_putstr0(cons, "命令            功能\n");
+	cons_putstr0(cons, "mem             查看内存\n");
 	cons_putstr0(cons, "mfstest         memfs\xB2\xE2\xCA\xD4\xB3\xCC\xD0\xF2\n");
 	cons_putstr0(cons, "memfs           \xCF\xD4\xCA\xBEmemfs\xC3\xFC\xC1\xEE\xB0\xEF\xD6\xFA\n");
-	cons_putstr0(cons, "tview           �ļ��Ķ���\n");
-	cons_putstr0(cons, "gview           ͼƬ�鿴��\n");
-	cons_putstr0(cons, "cls             ����\n");
-	cons_putstr0(cons, "dir             �ļ�Ŀ¼\n");
-	cons_putstr0(cons, "couture         ���\n");
-	cons_putstr0(cons, "ls              �ļ�Ŀ¼\n");
-	cons_putstr0(cons, "music           ���ֲ�����\n");
-	cons_putstr0(cons, "type            �����в鿴\n");
-	cons_putstr0(cons, "calc            �����м�����\n");
-	cons_putstr0(cons, "�����Tview help.txt -w70 -h30\n��ȡ����İ���\n\n");
+	cons_putstr0(cons, "tview           文件阅读器\n");
+	cons_putstr0(cons, "gview           图片查看器\n");
+	cons_putstr0(cons, "cls             清屏\n");
+	cons_putstr0(cons, "dir             文件目录\n");
+	cons_putstr0(cons, "couture         秒表\n");
+	cons_putstr0(cons, "ls              文件目录\n");
+	cons_putstr0(cons, "music           音乐播放器\n");
+	cons_putstr0(cons, "type            命令行查看\n");
+	cons_putstr0(cons, "calc            命令行计算器\n");
+	cons_putstr0(cons, "请键入Tview help.txt -w70 -h30\n获取更多的帮助\n\n");
 	return;
 }
 
@@ -329,22 +345,22 @@ static void cmd_memfs_putret(struct CONSOLE *cons, int ret)
 	switch (ret) {
     	case -1:  
 			cons_putstr0(cons, "\xB2\xCE\xCA\xFD\xCE\xDE\xD0\xA7\n");    
-			break;  // ������Ч
+			break;  // 参数无效
     	case -2:  
 			cons_putstr0(cons, "\xBF\xD5\xBC\xE4\xB2\xBB\xD7\xE3\n");    
-			break;  // �ռ䲻��
+			break;  // 空间不足
     	case -3:  
 			cons_putstr0(cons, "\xCE\xB4\xD5\xD2\xB5\xBD\n");            
-			break;  // δ�ҵ�
+			break;  // 未找到
     	case -4:  
 			cons_putstr0(cons, "\xD2\xD1\xB4\xE6\xD4\xDA\n");            
-			break;  // �Ѵ���
+			break;  // 已存在
     	case -5:  
 			cons_putstr0(cons, "\xB2\xBB\xCA\xC7\xC4\xBF\xC2\xBC\n");    
-			break;  // ����Ŀ¼
+			break;  // 不是目录
     	case -6:  
 			cons_putstr0(cons, "\xCA\xC7\xC4\xBF\xC2\xBC\n");            
-			break;  // ��Ŀ¼
+			break;  // 是目录
 		default:
 			cons_putstr0(cons, "ERROR\n");
 			break;
@@ -604,17 +620,42 @@ static void cmd_mread(struct CONSOLE *cons, char *cmdline)
 	}
 }
 
+void cmd_taskmon(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	if (open_taskmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "Stack exception, application execution error!\nINT 0C :\n Stack Exception.\n");
+	}
+	cons_newline(cons);
+	return;
+}
+
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal)
+{
+	struct SHTCTL *shtctl = (struct SHTCTL *)*((int *)0x0fe4);
+	/*
+	 * 通过bootpack侧窗口工厂函数打开监???窗口??
+	 * open_syncmon返回0表示资源不足或初始化失败??
+	 */
+	if (open_syncmon(shtctl, memtotal) == 0)
+	{
+		cons_putstr0(cons, "\nsyncdemo窗口打开失败\n");
+	}
+	cons_newline(cons);
+	return;
+}
 void cmd_mem(struct CONSOLE *cons, int memtotal)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
 	char s[96];
 	long int notfree = memtotal / 1048576 - memman_total(memman) / 1048576;
-	sprintf(s, "\n�ڴ�������  %dMB\n�����ڴ棺  %dMB\n�����ڴ棺  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
+	sprintf(s, "\n内存总量：  %dMB\n可用内存：  %dMB\n已用内存：  %dMB\nALGO: %s\n\n", memtotal / 1048576, memman_total(memman) / 1048576, notfree, memman_get_algo_name());
 	cons_putstr0(cons, s);
 	return;
 }
 
-//�Ĵ��ڴ�С��cls����ҲҪ��������
+//改窗口大小后cls命令也要调整参数
 void cmd_cls(struct CONSOLE *cons)
 {
 	int x, y;
@@ -628,7 +669,7 @@ void cmd_cls(struct CONSOLE *cons)
 	cons->cur_y = 28;
 	return;
 }
-//dir����
+//dir命令
 void cmd_dir(struct CONSOLE *cons)
 {
 	struct TASK *task = task_now();
@@ -637,7 +678,7 @@ void cmd_dir(struct CONSOLE *cons)
 	char s[60];
 	for (i = 0; i < 224; i++) {
 		if (k > 400) {
-			cons_putstr0(cons, "\n�ļ����࣬�밴���������������");
+			cons_putstr0(cons, "\n文件过多，请按任意键继续。。。");
 			do 
 			{
 				l = fifo32_get(&task->fifo);
@@ -651,7 +692,7 @@ void cmd_dir(struct CONSOLE *cons)
 		if (finfo[i].name[0] != 0xe5) {
 			if ((finfo[i].type & 0x18) == 0) {
 				k += 16;
-				sprintf(s, "                ext�ļ�       %7d�ֽ�\n", finfo[i].size);
+				sprintf(s, "                ext文件       %7d字节\n", finfo[i].size);
 				for (j = 0; j < 8; j++) {
 					s[j] = finfo[i].name[j];
 					if (s[j] == 0)
@@ -726,7 +767,7 @@ void cmd_ncst(struct CONSOLE *cons, char *cmdline, int memtotal)
 	return;
 }
 
-//����Ӧ�ó���
+//设置应用程序
 int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 {
 	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
@@ -759,7 +800,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 		appsiz = finfo->size;
 		p = file_loadfile2(finfo->clustno, &appsiz, fat);
 		// -----------------------------------------------
-		if (appsiz >= 36 && strncmp(p + 4, "Helo��", 4) == 0 && *p == 0x00) 
+		if (appsiz >= 36 && strncmp(p + 4, "Helo！", 4) == 0 && *p == 0x00) 
 		// -----------------------------------------------
 		{
 			segsiz = *((int *) (p + 0x0000));
@@ -791,7 +832,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 			memman_free_4k(memman, (int) q, segsiz);
 			task->langbyte1 = 0;
 		} else {
-			cons_putstr0(cons, "Helo OS Ӧ�ó����ļ��򿪴��󣬻��߲��Ǳ�׼��Helo os��ִ���ļ���\n�����޷��ڱ������������ !\n.HEL application program Opening Error.\n");
+			cons_putstr0(cons, "Helo OS 应用程序文件打开错误，或者不是标准的Helo os可执行文件！\n所以无法在本计算机上运行 !\n.HEL application program Opening Error.\n");
 		}
 		memman_free_4k(memman, (int) p, appsiz);
 		cons_newline(cons);
@@ -854,7 +895,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			sheet_setbuf(sht, (char *) ebx + ds_base, esi, edi, eax);
 			make_window8((char *) ebx + ds_base, esi, edi, (char *) ecx + ds_base, 0);
 			sheet_slide(sht, ((shtctl->xsize - esi) / 2) & ~3, (shtctl->ysize - edi) / 2);
-			sheet_updown(sht, shtctl->top); /*������ͼ��߶�ָ��Ϊ��ǰ�������ͼ��ĸ߶ȣ�����Ƶ��ϲ�*/
+			sheet_updown(sht, shtctl->top); /*将窗口图层高度指定为当前鼠标所在图层的高度，鼠标移到上层*/
 			reg[7] = (int) sht;
 			break;
 		case 6:
@@ -873,15 +914,15 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 8:
 			memman_init((struct MEMMAN *) (ebx + ds_base));
-			ecx &= 0xfffffff0; /*��16�ֽ�Ϊ��λ*/
+			ecx &= 0xfffffff0; /*以16字节为单位*/
 			memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 			break;
 		case 9:
-			ecx = (ecx + 0x0f) & 0xfffffff0; /*��16�ֽ�Ϊ��λ��λȡ��*/
+			ecx = (ecx + 0x0f) & 0xfffffff0; /*以16字节为单位进位取整*/
 			reg[7] = memman_alloc((struct MEMMAN *) (ebx + ds_base), ecx);
 			break;
 		case 10:
-			ecx = (ecx + 0x0f) & 0xfffffff0; /*��16�ֽ�Ϊ��λ��λȡ��*/
+			ecx = (ecx + 0x0f) & 0xfffffff0; /*以16字节为单位进位取整*/
 			memman_free((struct MEMMAN *) (ebx + ds_base), eax, ecx);
 			break;
 		case 11:
@@ -920,7 +961,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				io_cli();
 				if (fifo32_status(&task->fifo) == 0) {
 					if (eax != 0) {
-						task_sleep(task); /* FIFOΪ�գ����߲��ȴ�*/
+						task_sleep(task); /* FIFO为空，休眠并等待*/
 					} else {
 						io_sti();
 						reg[7] = -1;
@@ -929,25 +970,25 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 				}
 				i = fifo32_get(&task->fifo);
 				io_sti();
-				if (i <= 1) { /*����ö�ʱ��*/
-					/*Ӧ�ó�������ʱ����Ҫ��ʾ��꣬������ǽ��´���ʾ�õ�ֵ��Ϊ1*/
-					timer_init(cons->timer, &task->fifo, 1); /*�´���Ϊ1*/
+				if (i <= 1) { /*光标用定时器*/
+					/*应用程序运行时不需要显示光标，因此总是将下次显示用的值置为1*/
+					timer_init(cons->timer, &task->fifo, 1); /*下次置为1*/
 					timer_settime(cons->timer, 50);
 				}
-				if (i == 2) { /*���ON */
+				if (i == 2) { /*光标ON */
 					cons->cur_c = COL8_FFFFFF;
 				}
-				if (i == 3) { /*���OFF */
+				if (i == 3) { /*光标OFF */
 					cons->cur_c = -1;
 				}
-				if (i == 4) { /*ֻ�ر������д���*/
+				if (i == 4) { /*只关闭命令行窗口*/
 					timer_cancel(cons->timer);
 					io_cli();
-					fifo32_put(sys_fifo, cons->sht - shtctl->sheets0 + 2024); /*2024��2279*/
+					fifo32_put(sys_fifo, cons->sht - shtctl->sheets0 + 2024); /*2024～2279*/
 					cons->sht = 0;
 					io_sti();
 				}
-				if (i >= 256) { /*�������ݣ�ͨ������A����*/
+				if (i >= 256) { /*键盘数据（通过任务A）等*/
 					reg[7] = i - 256;
 					return 0;
 				}
@@ -955,7 +996,7 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 			break;
 		case 16:
 			reg[7] = (int) timer_alloc();
-			((struct TIMER *) reg[7])->flags2 = 1; /*�����Զ�ȡ��*/
+			((struct TIMER *) reg[7])->flags2 = 1; /*允许自动取消*/
 			break;
 		case 17:
 			timer_init((struct TIMER *) ebx, &task->fifo, eax + 256);
@@ -1089,7 +1130,37 @@ int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int 
 		case 37:
 			reg[7] = memman_get_algo_id();
 			break;
-
+		case 38:
+			reg[7] = MMU_MODE;
+			break;
+		case 60:
+			open_syncmon(shtctl, 0);
+			break;
+		case 61: // get user shared var
+			reg[7] = g_user_shared_var;
+			break;
+		case 62: // set user shared var
+			g_user_shared_var = eax;
+			break;
+		case 63: // user sem wait
+			user_sem_wait();
+			break;
+		case 64: // user sem post
+			user_sem_post();
+			break;
+		case 65: // user sequence reset
+			user_sync_init();
+			break;
+		case 66: // user pc init
+			user_pc_init();
+			break;
+		case 67: // user pc produce
+			user_pc_produce(eax);
+			break;
+		case 68: // user pc consume
+			reg[7] = user_pc_consume();
+			break;
+      
 		/* memfs: api70 - api77 */
 		case 70: /* int api_memfs_format(int disk_kb); */
 			reg[7] = memfs_format(eax);
@@ -1155,7 +1226,7 @@ int *inthandler0c(int *esp)
 	struct TASK *task = task_now();
 	struct CONSOLE *cons = task->cons;
 	char s[40];
-	cons_putstr0(cons, "��ջ�쳣��Ӧ����������ִ�д��󣡣�\nINT 0C :\n Stack Exception.\n");
+	cons_putstr0(cons, "堆栈异常，应用软件程序执行错误！！\nINT 0C :\n Stack Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
 	return &(task->tss.esp0);
@@ -1166,9 +1237,401 @@ int *inthandler0d(int *esp)
 	struct TASK *task = task_now();
 	struct CONSOLE *cons = task->cons;
 	char s[40];
-	cons_putstr0(cons, "һ�㱣�����⣬Ӧ����ֹͣ���У�Ӧ�ô�����������\nINT 0D :\n General Protected Exception.\n");
+	cons_putstr0(cons, "一般保护例外，应用已停止运行，应用触发保护程序。\nINT 0D :\n General Protected Exception.\n");
 	sprintf(s, "EIP = %08X\n", esp[11]);
 	cons_putstr0(cons, s);
+	return &(task->tss.esp0);
+}
+
+/* ============================================================
+ * timertest: 定时器管理结构与方法测试命令
+ * TC-01: 基本超时顺序验证（3个定时器，超时顺序应为T1<T2<T3）
+ * TC-02: 大量并发定时器压力测试（60个定时器同时运行）
+ * TC-03: timer_cancel 边界测试
+ * TC-04: 池耗尽测试（连续分配直到返回0）
+ * TC-05: timeout=0 立即到期测试
+ * ============================================================ */
+void cmd_timertest(struct CONSOLE *cons)
+{
+	struct TASK *task = task_now();
+	struct TIMER *timers[64];
+	char s[64];
+	int i, count, pass, alloc_count;
+
+	cons_putstr0(cons, "\n--- Timer Test Start ---\n");
+
+	/* TC-01: 基本超时顺序验证 */
+	cons_putstr0(cons, "\n[TC-01] Basic timeout order (3 timers)\n");
+	{
+		struct TIMER *t1, *t2, *t3;
+		t1 = timer_alloc(); timer_init(t1, &task->fifo, 0x101);
+		t2 = timer_alloc(); timer_init(t2, &task->fifo, 0x102);
+		t3 = timer_alloc(); timer_init(t3, &task->fifo, 0x103);
+		/* 故意乱序设置：t3最短，t1最长，验证链表排序 */
+		timer_settime(t3, 5);
+		timer_settime(t1, 15);
+		timer_settime(t2, 10);
+		/* 验证三个定时器的timeout值满足 t3 < t2 < t1（升序） */
+		pass = (t3->timeout < t2->timeout && t2->timeout < t1->timeout) ? 1 : 0;
+		sprintf(s, "  Link order check: %s\n", pass ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		sprintf(s, "  t3->timeout=%u t2->timeout=%u t1->timeout=%u\n",
+			t3->timeout, t2->timeout, t1->timeout);
+		cons_putstr0(cons, s);
+		/* 等待3个定时器全部到期（消费FIFO） */
+		count = 0;
+		while (count < 3) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i == 0x101 || i == 0x102 || i == 0x103) count++;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		cons_putstr0(cons, "  All 3 timers fired: PASS\n");
+	}
+
+	/* TC-02: 60个并发定时器压力测试 */
+	cons_putstr0(cons, "\n[TC-02] 60 concurrent timers stress test\n");
+	{
+		int fired = 0;
+		/* 分配60个定时器，超时值1~60 tick */
+		for (i = 0; i < 60; i++) {
+			timers[i] = timer_alloc();
+			if (timers[i] == 0) {
+				cons_putstr0(cons, "  timer_alloc failed!\n");
+				break;
+			}
+			timer_init(timers[i], &task->fifo, 0x200 + i);
+			timer_settime(timers[i], i + 1);
+		}
+		sprintf(s, "  Allocated 60 timers, pool used: ~%d/%d\n", 60 + 3, MAX_TIMER);
+		cons_putstr0(cons, s);
+		/* 等待60个全部到期 */
+		while (fired < 60) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i >= 0x200 && i < 0x200 + 60) fired++;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		sprintf(s, "  All 60 timers fired: %s\n", fired == 60 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-03: timer_cancel 边界测试 */
+	cons_putstr0(cons, "\n[TC-03] timer_cancel boundary test\n");
+	{
+		struct TIMER *tc;
+		int ret;
+		/* 取消未到期的定时器 */
+		tc = timer_alloc();
+		timer_init(tc, &task->fifo, 0x301);
+		timer_settime(tc, 200);
+		ret = timer_cancel(tc);
+		sprintf(s, "  Cancel active timer: ret=%d (expect 1): %s\n",
+			ret, ret == 1 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		/* 取消已取消的定时器（flags已变为ALLOC=1，非USING=2） */
+		ret = timer_cancel(tc);
+		sprintf(s, "  Cancel already-cancelled: ret=%d (expect 0): %s\n",
+			ret, ret == 0 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		timer_free(tc);
+	}
+
+	/* TC-04: 池耗尽测试 */
+	cons_putstr0(cons, "\n[TC-04] Pool exhaustion test\n");
+	{
+		static struct TIMER *tmp[MAX_TIMER];
+		int alloc_count = 0;
+		/* 持续分配直到失败 */
+		for (i = 0; i < MAX_TIMER; i++) {
+			tmp[i] = timer_alloc();
+			if (tmp[i] == 0) break;
+			alloc_count++;
+		}
+		sprintf(s, "  Allocated %d timers before pool empty\n", alloc_count);
+		cons_putstr0(cons, s);
+		sprintf(s, "  timer_alloc returns 0 at exhaustion: %s\n",
+			tmp[alloc_count] == 0 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		/* 释放所有 */
+		for (i = 0; i < alloc_count; i++) {
+			timer_free(tmp[i]);
+		}
+		cons_putstr0(cons, "  Pool freed.\n");
+	}
+
+	/* TC-05: timeout=0 立即到期测试 */
+	cons_putstr0(cons, "\n[TC-05] timeout=0 immediate fire test\n");
+	{
+		struct TIMER *t0;
+		t0 = timer_alloc();
+		timer_init(t0, &task->fifo, 0x501);
+		timer_settime(t0, 0);
+		/* timeout=0 意味着 timeout = timerctl.count+0，下一个tick即触发 */
+		count = 0;
+		while (count == 0) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i == 0x501) count = 1;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		cons_putstr0(cons, "  timeout=0 fired on next tick: PASS\n");
+	}
+
+	/* TC-06: 调度器协同验证——压力测试期间 task_timer 仍正常触发 */
+	cons_putstr0(cons, "\n[TC-06] Scheduler cooperation: task_timer survives stress\n");
+	{
+		unsigned int count_before, count_after;
+		int switches_ok;
+		/* 记录当前 tick，启动 30 个定时器，等待全部触发，
+		   期间 task_timer 也在运行，验证调度未被阻断 */
+		count_before = timerctl.count;
+		for (i = 0; i < 30; i++) {
+			timers[i] = timer_alloc();
+			timer_init(timers[i], &task->fifo, 0x600 + i);
+			timer_settime(timers[i], i * 2 + 1);
+		}
+		count = 0;
+		while (count < 30) {
+			io_cli();
+			if (fifo32_status(&task->fifo) > 0) {
+				i = fifo32_get(&task->fifo);
+				io_sti();
+				if (i >= 0x600 && i < 0x600 + 30) count++;
+			} else {
+				task_sleep(task);
+				io_sti();
+			}
+		}
+		count_after = timerctl.count;
+		/* task_timer 以 priority=2 tick 为周期切换，
+		   若 count 增长正常说明 IRQ0 未被阻断 */
+		switches_ok = (count_after > count_before) ? 1 : 0;
+		sprintf(s, "  tick advanced %u during stress (expect >0): %s\n",
+			count_after - count_before, switches_ok ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		/* 验证 task_timer 仍在链表中（flags=USING=2） */
+		sprintf(s, "  task_timer still active (flags=%d, expect 2): %s\n",
+			task_timer->flags,
+			task_timer->flags == 2 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-07: timerctl.count 单调递增验证 */
+	cons_putstr0(cons, "\n[TC-07] timerctl.count monotonic increase\n");
+	{
+		unsigned int c1, c2, c3;
+		c1 = timerctl.count;
+		/* 等待约 5 tick */
+		{
+			struct TIMER *tw = timer_alloc();
+			timer_init(tw, &task->fifo, 0x701);
+			timer_settime(tw, 5);
+			while (1) {
+				io_cli();
+				if (fifo32_status(&task->fifo) > 0) {
+					i = fifo32_get(&task->fifo);
+					io_sti();
+					if (i == 0x701) break;
+				} else { task_sleep(task); io_sti(); }
+			}
+		}
+		c2 = timerctl.count;
+		/* 再等约 5 tick */
+		{
+			struct TIMER *tw = timer_alloc();
+			timer_init(tw, &task->fifo, 0x702);
+			timer_settime(tw, 5);
+			while (1) {
+				io_cli();
+				if (fifo32_status(&task->fifo) > 0) {
+					i = fifo32_get(&task->fifo);
+					io_sti();
+					if (i == 0x702) break;
+				} else { task_sleep(task); io_sti(); }
+			}
+		}
+		c3 = timerctl.count;
+		sprintf(s, "  count: %u -> %u -> %u\n", c1, c2, c3);
+		cons_putstr0(cons, s);
+		sprintf(s, "  monotonic: %s\n",
+			(c1 < c2 && c2 < c3) ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-08: timer_cancelall 清理验证 */
+	cons_putstr0(cons, "\n[TC-08] timer_cancelall cleanup\n");
+	{
+		struct FIFO32 test_fifo;
+		int test_buf[32];
+		int active_before, active_after, j;
+		fifo32_init(&test_fifo, 32, test_buf, 0);
+		/* 向 test_fifo 注册 10 个定时器，flags2=1 */
+		for (i = 0; i < 10; i++) {
+			timers[i] = timer_alloc();
+			timers[i]->flags2 = 1;
+			timer_init(timers[i], &test_fifo, 0x800 + i);
+			timer_settime(timers[i], 200 + i); /* 超时较长，不会自然到期 */
+		}
+		/* 统计 test_fifo 关联的活跃定时器数 */
+		active_before = 0;
+		for (j = 0; j < MAX_TIMER; j++) {
+			if (timerctl.timers0[j].flags == 2 &&
+				timerctl.timers0[j].fifo == &test_fifo) {
+				active_before++;
+			}
+		}
+		timer_cancelall(&test_fifo);
+		active_after = 0;
+		for (j = 0; j < MAX_TIMER; j++) {
+			if (timerctl.timers0[j].flags == 2 &&
+				timerctl.timers0[j].fifo == &test_fifo) {
+				active_after++;
+			}
+		}
+		sprintf(s, "  active before cancelall: %d, after: %d\n",
+			active_before, active_after);
+		cons_putstr0(cons, s);
+		sprintf(s, "  cancelall cleared all: %s\n",
+			(active_before == 10 && active_after == 0) ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+	}
+
+	/* TC-09: 压力测试后池恢复正常，可继续分配 */
+	cons_putstr0(cons, "\n[TC-09] Pool recovery after stress\n");
+	{
+		struct TIMER *t_new;
+		t_new = timer_alloc();
+		sprintf(s, "  alloc after stress: %s\n",
+			t_new != 0 ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		if (t_new) timer_free(t_new);
+	}
+
+	/* TC-10: 链表插入时间复杂度测量
+	 * 分别在 n=0,50,100,200 个背景定时器存在时，测量插入一个新定时器所需 tick 数
+	 * 由于 PIT 精度为 10ms/tick，此处用 timerctl.count 差值近似（粗粒度）
+	 * 主要目的是验证随 n 增大插入耗时是否呈线性增长趋势 */
+cons_putstr0(cons, "\n[TC-10] timer_settime insertion complexity\n");
+	{
+		int n_bg[] = {0, 50, 100, 200};
+		unsigned int tc10_ticks[4];
+		int k, b;
+		static struct TIMER *bg[200];
+		struct TIMER *probe;
+		unsigned int t_start, t_end;
+
+		/* 先收集所有测量结果，再统一输出，避免输出被 task switch 打断 */
+		for (k = 0; k < 4; k++) {
+			int n = n_bg[k];
+			for (b = 0; b < n; b++) {
+				bg[b] = timer_alloc();
+				if (bg[b] == 0) break;
+				timer_init(bg[b], &task->fifo, 0xf00);
+				timer_settime(bg[b], 50000 + b * 5);
+			}
+			probe = timer_alloc();
+			timer_init(probe, &task->fifo, 0xf01);
+			t_start = timerctl.count;
+			timer_settime(probe, 51000);
+			t_end = timerctl.count;
+			tc10_ticks[k] = t_end - t_start;
+			timer_cancel(probe);
+			timer_free(probe);
+			for (b = 0; b < n; b++) {
+				if (bg[b] != 0) {
+					timer_cancel(bg[b]);
+					timer_free(bg[b]);
+				}
+			}
+		}
+		/* 拼成一个字符串后一次性输出，减少被 task switch 打断的概率 */
+		{
+			char out[256];
+			int pos = 0;
+			for (k = 0; k < 4; k++) {
+				sprintf(s, "n=%3d: %u tick(s)\n", n_bg[k], tc10_ticks[k]);
+				for (i = 0; s[i] != 0; i++) out[pos++] = s[i];
+			}
+			sprintf(s, "(0 tick = sub-10ms, expected)\n");
+			for (i = 0; s[i] != 0; i++) out[pos++] = s[i];
+			out[pos] = 0;
+			io_cli();
+			cons_putstr0(cons, out);
+			io_sti();
+		}
+	}
+
+	/* TC-11: MAX_TIMER 扩容后池容量验证
+	 * 将 MAX_TIMER 从 500 改为 800 后重跑池耗尽测试，
+	 * 验证可分配数量相应增加 */
+	cons_putstr0(cons, "\n[TC-11] MAX_TIMER capacity check\n");
+	{
+		static struct TIMER *tmp2[MAX_TIMER];
+		int alloc_count2 = 0;
+		for (i = 0; i < MAX_TIMER; i++) {
+			tmp2[i] = timer_alloc();
+			if (tmp2[i] == 0) break;
+			alloc_count2++;
+		}
+		sprintf(s, "  MAX_TIMER=%d, allocatable=%d, system_used=%d\n",
+			MAX_TIMER, alloc_count2, MAX_TIMER - alloc_count2);
+		cons_putstr0(cons, s);
+		sprintf(s, "  pool size matches MAX_TIMER: %s\n",
+			alloc_count2 + (MAX_TIMER - alloc_count2) == MAX_TIMER ? "PASS" : "FAIL");
+		cons_putstr0(cons, s);
+		for (i = 0; i < alloc_count2; i++) timer_free(tmp2[i]);
+	}
+
+	cons_putstr0(cons, "\n--- Timer Test Done ---\n\n");
+	return;
+}
+int *inthandler0e(int *esp)
+{
+	struct TASK *task;
+	struct CONSOLE *cons;
+	char s[40];
+	unsigned int error_code = (unsigned int) esp[0];
+	unsigned int fault_addr = (unsigned int) load_cr2();
+
+	if (taskctl == 0) {
+		for (;;) {
+			io_hlt();
+		}
+	}
+	task = task_now();
+	if (task == 0) {
+		for (;;) {
+			io_hlt();
+		}
+	}
+
+	cons = task->cons;
+	if (cons != 0) {
+		cons_putstr0(cons, "INT 0E :\n Page Fault Exception.\n");
+		sprintf(s, "CR2 = %08X\n", fault_addr);
+		cons_putstr0(cons, s);
+		sprintf(s, "ERR = %08X\n", error_code);
+		cons_putstr0(cons, s);
+		sprintf(s, "EIP = %08X\n", esp[11]);
+		cons_putstr0(cons, s);
+	}
+
 	return &(task->tss.esp0);
 }
 

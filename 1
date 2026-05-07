@@ -1,0 +1,64 @@
+内存管理模块开发进度总结
+一、DuHaoyang-memmap分支（内存映射可视化）
+核心提交：6a25545 - "编写memmap程序"
+主要成果：
+1. 新增内存映射可视化工具 (apps/memmap/memmap.c:1-129)
+   - 创建图形界面应用程序，实时显示128MB物理内存使用状态
+   - 使用256×128像素网格，每个像素代表4KB内存页
+   - 黑色表示已分配内存，白色表示空闲内存
+   - 显示已分配内存、空闲内存、空闲块数量等统计信息
+2. 新增系统调用API (apps/apilib/api040.nas:1-18)
+   - API 36号：api_getmemmap - 获取内存映射信息
+   - 支持返回最多4090个空闲内存块条目
+   - 返回空闲字节总数
+3. 内核层支持 (kernel/console.c:728-746)
+   - 在中断处理中添加API 36号处理逻辑
+   - 将内存管理器的空闲块信息复制到用户缓冲区
+4. 数据结构定义 (apps/apilib.h:14-19)
+   - 新增MEMMAP_ENTRY结构体，包含地址和大小字段
+文件变更：新增3个文件，修改4个文件，共+227行/-48行
+二、DuHaoyang-memAlgo分支（内存分配算法）
+核心提交：b8dda60 - "编写memAlgo算法"
+主要成果：
+1. 实现五种内存分配算法 (kernel/memory.c:35-250)
+   - *LEGACY (0)*：原有算法
+   - *FIRST_FIT (1)*：首次适配算法
+   - *NEXT_FIT (2)*：循环首次适配算法（使用静态变量memman_rr_next记录位置）
+   - *BEST_FIT (3)*：最佳适配算法（选择最小合适块）
+   - *WORST_FIT (4)*：最差适配算法（选择最大合适块）
+2. 新增算法查询功能 (kernel/memory.c:263-280)
+   - memman_get_algo_id() - 返回当前算法ID
+   - memman_get_algo_name() - 返回算法名称字符串
+3. 新增系统调用API (apps/apilib/api041.nas:1-15)
+   - API 37号：api_getmemalgo - 获取当前内存分配算法
+4. 内核头文件更新 (kernel/bootpack.h:169-190)
+   - 定义算法常量：MEM_ALLOC_ALGO_LEGACY到MEM_ALLOC_ALGO_WORST_FIT
+   - 声明新的算法查询函数
+5. 用户界面增强 (kernel/console.c:266-274)
+   - 在mem命令输出中显示当前使用的算法名称
+文件变更：新增1个文件，修改7个文件，共+277行/-62行
+三、分支协同与整合
+关键合并提交：d1af67c - "memmap程序增加显示memAlgo算法"
+协同成果：
+1. 功能整合 (apps/memmap/memmap.c:19-35, 87-93)
+   - 在memmap可视化工具中显示当前内存分配算法
+   - 添加mem_algo_name()函数将算法ID转换为可读名称
+   - 调用api_getmemalgo()获取算法信息并显示在界面中
+2. 代码优化
+   - 修复kernel/console.c文件编码问题，统一为GB2312编码
+四、技术架构
+用户空间：
+  memmap应用程序 → 调用API 36获取内存映射 → 显示可视化界面
+                 → 调用API 37获取算法信息 → 显示算法名称
+内核空间：
+  API 36处理程序 → 查询memman空闲块信息 → 返回给用户
+  API 37处理程序 → 调用memman_get_algo_id() → 返回算法ID
+内存管理核心：
+  memman_alloc() → 根据MEM_ALLOC_ALGO选择算法执行
+                 → LEGACY/FIRST_FIT/NEXT_FIT/BEST_FIT/WORST_FIT
+五、总结
+两个分支分别完成了：
+1. memmap分支：实现了内存使用情况的可视化监控工具
+2. memAlgo分支：实现了五种内存分配算法及查询接口
+3. 协同工作：将算法信息集成到可视化工具中，形成完整的内存管理调试工具链
+当前状态：两个分支的功能已成功合并到主分支，形成了完整的内存管理模块，支持算法选择、状态查询和可视化监控。

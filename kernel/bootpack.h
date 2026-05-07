@@ -32,6 +32,12 @@ struct BOOTINFO { /* 0x0ff0-0x0fff */
 #define ADR_BOOTINFO	0x00000ff0
 #define ADR_DISKIMG		0x00100000
 
+#define MMU_MODE_SEGMENT	0
+#define MMU_MODE_SEG_PAGE	1
+#ifndef MMU_MODE
+#define MMU_MODE MMU_MODE_SEGMENT
+#endif
+
 /* naskfunc.nas */
 void io_hlt(void);
 void io_cli(void);
@@ -45,9 +51,12 @@ void load_gdtr(int limit, int addr);
 void load_idtr(int limit, int addr);
 int load_cr0(void);
 void store_cr0(int cr0);
+void store_cr3(int cr3);
+int load_cr2(void);
 void load_tr(int tr);
 void asm_inthandler0c(void);
 void asm_inthandler0d(void);
+void asm_inthandler0e(void);
 void asm_inthandler20(void);
 void asm_inthandler21(void);
 void asm_inthandler2c(void);
@@ -140,6 +149,8 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 #define ADR_GDT			0x00270000
 #define LIMIT_GDT		0x0000ffff
 #define ADR_BOTPAK		0x00280000
+#define KERNEL_VIRT_BASE	0xc0000000
+#define KERNEL_VIRT_ADDR(paddr)	((unsigned int) (paddr) + KERNEL_VIRT_BASE)
 #define LIMIT_BOTPAK	0x0007ffff
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
@@ -202,6 +213,7 @@ unsigned int memman_alloc_4k(struct MEMMAN *man, unsigned int size);
 int memman_free_4k(struct MEMMAN *man, unsigned int addr, unsigned int size);
 int memman_get_algo_id(void);
 char *memman_get_algo_name(void);
+int paging_identity_map_init(struct MEMMAN *man, unsigned int memtotal);
 
 /* sheet.c */
 #define MAX_SHEETS		256
@@ -226,7 +238,7 @@ void sheet_slide(struct SHEET *sht, int vx0, int vy0);
 void sheet_free(struct SHEET *sht);
 
 /* timer.c */
-#define MAX_TIMER		500
+#define MAX_TIMER		800
 struct TIMER {
 	struct TIMER *next;
 	unsigned int timeout;
@@ -263,6 +275,7 @@ struct TSS32 {
 struct TASK {
 	int sel, flags;
 	int level, priority;
+	unsigned int enqueue_tick; // 记录任务进入就绪队列的时间�?
 	struct FIFO32 fifo;
 	struct TSS32 tss;
 	struct SEGMENT_DESCRIPTOR ldt[2];
@@ -286,12 +299,15 @@ struct TASKCTL {
 };
 extern struct TASKCTL *taskctl;
 extern struct TIMER *task_timer;
+extern int kernel_cr3;
+extern int g_sched_enable_aging;
 struct TASK *task_now(void);
 struct TASK *task_init(struct MEMMAN *memman);
 struct TASK *task_alloc(void);
 void task_run(struct TASK *task, int level, int priority);
 void task_switch(void);
 void task_sleep(struct TASK *task);
+int task_aging_limit_for_level(int level);
 
 /* window.c */
 void make_window8(unsigned char *buf, int xsize, int ysize, char *title, char act);
@@ -317,6 +333,8 @@ void cons_newline(struct CONSOLE *cons);
 void cons_putstr0(struct CONSOLE *cons, char *s);
 void cons_putstr1(struct CONSOLE *cons, char *s, int l);
 void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal);
+void cmd_taskmon(struct CONSOLE *cons, int memtotal);
+void cmd_syncdemo(struct CONSOLE *cons, int memtotal);
 void cmd_mem(struct CONSOLE *cons, int memtotal);
 void cmd_cls(struct CONSOLE *cons);
 void cmd_ls(struct CONSOLE *cons);
@@ -330,6 +348,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline);
 void cmd_fab(struct CONSOLE *cons, int *fat, char *cmdline);
 int *hrb_api(int edi, int esi, int ebp, int esp, int ebx, int edx, int ecx, int eax);
 int *inthandler0d(int *esp);
+int *inthandler0e(int *esp);
 int *inthandler0c(int *esp);
 void hrb_api_linewin(struct SHEET *sht, int x0, int y0, int x1, int y1, int col);
 
@@ -350,8 +369,20 @@ int tek_getsize(unsigned char *p);
 int tek_decomp(unsigned char *p, char *q, int size);
 
 /* bootpack.c */
+extern int g_user_shared_var;
+void user_sync_init(void);
+void user_sem_wait(void);
+void user_sem_post(void);
+
+void user_pc_init(void);
+void user_pc_produce(int val);
+int user_pc_consume(void);
+
+void syncdemo_start_once(void);
 struct TASK *open_constask(struct SHEET *sht, unsigned int memtotal);
 struct SHEET *open_console(struct SHTCTL *shtctl, unsigned int memtotal);
+struct SHEET *open_taskmon(struct SHTCTL *shtctl, unsigned int memtotal);
+struct SHEET *open_syncmon(struct SHTCTL *shtctl, unsigned int memtotal);
 
 /*cmos.c*/
 #define cmos_index 0x70
