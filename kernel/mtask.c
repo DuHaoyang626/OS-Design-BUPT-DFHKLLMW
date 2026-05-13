@@ -94,6 +94,8 @@ void task_add(struct TASK *task)
 	struct TASKLEVEL *tl = &taskctl->level[task->level];
 	tl->tasks[tl->running] = task;
 	tl->running++;
+	/* Record enqueue time for WAIT/aging metrics. */
+	task->enqueue_tick = timerctl.count;
 	task->flags = 2; /* “®ì’† */
 	return;
 }
