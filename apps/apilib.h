@@ -78,7 +78,7 @@ int api_getmemalgo(void);
 int api_getmemmap(struct MEMMAP_ENTRY *entries, int max_entries, int *free_bytes);
 int api_getmmumode(void);
 
-/* api70-api79: 内存文件系统（memfs） */
+/* api70-api80: 内存文件系统（memfs） */
 int api_memfs_format(int disk_kb);
 int api_memfs_mkdir(char *path);
 int api_memfs_create(char *path);
@@ -88,6 +88,8 @@ int api_memfs_copy(char *src, char *dst);
 int api_memfs_delete(char *path);
 int api_memfs_list(char *path, char *outbuf, int outbuf_len);
 int api_memfs_release(void);
+int api_getdsbase(void);
+unsigned int api_virt2phys(void *ptr);
 
 // cpuid
 void asm_cpuid(int id_eax, int id_ecx, int *eax, int *ebx, int *ecx, int *edx);
