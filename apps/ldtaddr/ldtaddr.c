@@ -43,6 +43,12 @@ int _main(void)
 
 	printf("b - a (offset diff) = 0x%08X\n", (unsigned int) (b - a));
 	printf("note: b offset accounts for a allocation.\n");
+	printf("\n≥¢ ‘¥•∑¢÷–∂œ / #GP (INT 0D)...\n");
+	{
+		unsigned char priv_code[2] = { 0xfa, 0xc3 }; 
+		void (*privileged_func)(void) = (void (*)(void)) priv_code;
+		privileged_func();
+	}
 
 	api_end();
 	return 0;
