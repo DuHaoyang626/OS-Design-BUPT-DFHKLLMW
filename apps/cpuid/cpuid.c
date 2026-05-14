@@ -1,4 +1,4 @@
-/* ˆÚAŠ raup os Š´?’ñ‹Ÿ*/
+/* ï¿½ÚAï¿½ï¿½ raup os ï¿½ï¿½?ï¿½ï¿½*/
 #include <stdio.h>
 #include <string.h>
 #include "apilib.h"
@@ -21,7 +21,7 @@ _main()
 
 	api_initmalloc();
 	buf = api_malloc(400 * 120 * 2);
-	win = api_openwin(buf, 400, 120, 255, "cpuid for Helo OS");
+	win = api_openwin(buf, 400, 120, 255, "cpuid for BUPT OS");
 	timer = api_alloctimer();
 	api_inittimer(timer, 128);
 
@@ -82,7 +82,7 @@ _main()
 		api_putstrwin(win, 14, 27 + 16 * 3, 0, 48, name_string + i);
 	}
 
-/* ???—¦“I?—Ê¸“x·B */
+/* ???ï¿½ï¿½ï¿½I?ï¿½Êï¿½ï¿½xï¿½ï¿½ï¿½B */
 
 	asm_rdtsc(&tsc_start_high, &tsc_start_low);
 	for (;;) {

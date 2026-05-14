@@ -278,7 +278,7 @@ void cons_runcmd(char *cmdline, struct CONSOLE *cons, int *fat, int memtotal)
 		cmd_ncst(cons, cmdline, memtotal);
 	} else if (cmdline[0] != 0) {
 		if (cmd_app(cons, fat, cmdline) == 0) {
-			cons_putstr0(cons, "\n您输入命令的既不是何乐操作系统内部指令，也不是外部程序。\n\n");
+			cons_putstr0(cons, "\n您输入命令的既不BUPT OS操作系统内部指令，也不是外部程序。\n\n");
 		}
 	}
 	return;
@@ -832,7 +832,7 @@ int cmd_app(struct CONSOLE *cons, int *fat, char *cmdline)
 			memman_free_4k(memman, (int) q, segsiz);
 			task->langbyte1 = 0;
 		} else {
-			cons_putstr0(cons, "Helo OS 应用程序文件打开错误，或者不是标准的Helo os可执行文件！\n所以无法在本计算机上运行 !\n.HEL application program Opening Error.\n");
+			cons_putstr0(cons, "BUPT OS 应用程序文件打开错误，或者不是标准的BUPT os可执行文件！\n所以无法在本计算机上运行 !\n.HEL application program Opening Error.\n");
 		}
 		memman_free_4k(memman, (int) p, appsiz);
 		cons_newline(cons);
